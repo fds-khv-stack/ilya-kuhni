@@ -10,6 +10,8 @@ const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages отдаёт проект по адресу /<репозиторий>/, поэтому базовый путь задан явно
+  base: '/ilya-kuhni/',
   plugins: [react(), tailwindcss(), viteSingleFile()],
   build: {
     outDir: "build",

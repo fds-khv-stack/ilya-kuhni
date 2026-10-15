@@ -8,9 +8,12 @@ const TILE_MS = 2000;
 const HERO_IMAGES = ['/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg'];
 const delay = (ms: number): CSSProperties => ({ ['--d' as string]: `${ms}ms` });
 // WebP-версии генерирует scripts/make_webp.py: <имя>.webp (полный) и <имя>-sm.webp (700 px для плиток).
+// На GitHub Pages сайт живёт в подпапке (/ilya-kuhni/), поэтому все пути идут через BASE_URL.
+const asset = (p: string) => (p.startsWith('/') ? import.meta.env.BASE_URL + p.slice(1) : p);
 const toWebp = (src: string, light = true) => src.replace(/\.(jpe?g)$/i, (light ? '-sm' : '') + '.webp');
 function Pic({ src, alt, className, light = true, loading = 'lazy', fetchPriority, onClick }: { src: string; alt: string; className?: string; light?: boolean; loading?: 'lazy' | 'eager'; fetchPriority?: 'high' | 'auto'; onClick?: (e: ReactMouseEvent<HTMLImageElement>) => void }) {
-  return <picture><source type="image/webp" srcSet={toWebp(src, light)} /><img src={src} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} onClick={onClick} /></picture>;
+  const url = asset(src);
+  return <picture><source type="image/webp" srcSet={toWebp(url, light)} /><img src={url} alt={alt} className={className} loading={loading} decoding="async" fetchPriority={fetchPriority} onClick={onClick} /></picture>;
 }
 
 

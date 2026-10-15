@@ -46,15 +46,16 @@ for src in targets():
     sm = src.rsplit('.', 1)[0] + '-sm.webp'
     size = os.path.getsize(src)
     before += size
-    fresh = os.path.exists(full) and os.path.exists(sm) and os.path.getmtime(full) > os.path.getmtime(src) \
-        and os.path.getmtime(sm) > os.path.getmtime(src)
+    fresh = os.path.exists(full) and os.path.getmtime(full) > os.path.getmtime(src) \
+        and (is_hero or (os.path.exists(sm) and os.path.getmtime(sm) > os.path.getmtime(src)))
     if fresh:
         skipped += 1
         after_full += os.path.getsize(full)
-        after_sm += os.path.getsize(sm)
+        after_sm += os.path.getsize(sm) if os.path.exists(sm) else 0
         continue
     after_full += convert(src, full, 4096 if is_hero else 1400, 82 if is_hero else Q_FULL)
-    after_sm += convert(src, sm, 1400 if is_hero else SM_WIDTH, 80 if is_hero else Q_SM)
+    if not is_hero:  # первому экрану лёгкая версия не нужна — там всегда полный webp
+        after_sm += convert(src, sm, SM_WIDTH, Q_SM)
     made_full += 1
     made_sm += 1
 
