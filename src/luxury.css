@@ -1,0 +1,202 @@
+/* ============================================================================
+   ЛЮКС-СЛОЙ (15.10.2026): глубокий графит + золото, serif-типографика,
+   стеклянные поверхности, золотые линии, премиальные анимации.
+   Подключается последним: index.css → premium.css → luxury.css
+   ============================================================================ */
+
+:root{
+  color-scheme:dark;
+  --gold:#D4AF37;
+  --gold-soft:#E8CE8A;
+  --gold-deep:#A9822A;
+  --gold-line:rgba(212,175,55,.18);
+  --gold-glow:rgba(212,175,55,.22);
+  --lux-1:#0a0a0a;          /* фон страницы */
+  --lux-2:#101014;          /* поверхности */
+  --lux-3:#15151b;          /* приподнятые поверхности */
+  --lux-glass:rgba(255,255,255,.035);
+
+  /* перекрываем палитру базового и «шоколадного» слоёв */
+  --paper:var(--lux-1); --ink:#f2ede3; --muted:#a29a8c; --line:var(--gold-line);
+  --green:var(--gold);                    /* акцентные кнопки — золото */
+  --choco:var(--lux-2); --choco-2:var(--lux-3); --choco-3:#07070a;
+  --brass:var(--gold); --brass-soft:var(--gold-soft);
+  --display:'Playfair Display','Times New Roman',serif;
+  --sans:'Inter',system-ui,-apple-system,sans-serif;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  /* фон страницы: перебиваем :root{background:#fafaf7} из базового слоя */
+  background:var(--lux-1);
+}
+
+html,:root{background:var(--lux-1) !important;color:var(--ink)}
+
+html{background:var(--lux-1)}
+body{background:var(--lux-1);color:var(--ink);font-family:var(--sans)}
+
+/* ---------- типографика: крупный serif, широкие интервалы в подписях ---------- */
+h1,h2,h3,.hero-copy h1{font-family:var(--display);font-weight:500;letter-spacing:-.01em}
+h1{letter-spacing:-.015em;line-height:1.04}
+h2{letter-spacing:-.005em}
+.eyebrow,.marquee-track,.cat-count,.image-top-note,.brand-caption,.step-top small,
+.hero-note,.photo-label,.channel-card span,.footer-links,.footer-bottom,.portfolio-count{
+  text-transform:uppercase;color:var(--gold-soft)}
+@media (min-width:1024px){
+  /* широкие интервалы — только там, где есть место: на телефоне они распирают шапку */
+  .eyebrow,.marquee-track,.cat-count,.image-top-note,.brand-caption,.step-top small,
+  .hero-note,.photo-label,.channel-card span,.footer-links,.footer-bottom,.portfolio-count{
+    letter-spacing:.26em}
+}
+@media (max-width:1023px){
+  .brand-caption{letter-spacing:.1em}
+  .header-inner{column-gap:8px;padding-inline:16px}
+  .brand-name,.brand-kitchen{letter-spacing:normal}
+  .brand-name{font-size:24px}
+  .header-cta{font-size:10px;padding:10px 12px}
+  .mobile-menu-button{width:44px;height:44px;min-width:44px}
+  .eyebrow,.hero-note,.cat-count,.channel-card span,.footer-links,.footer-bottom{letter-spacing:.16em}
+}
+@media (max-width:419px){
+  /* на узких телефонах подпись под логотипом распирает шапку — убираем её */
+  .brand-caption{display:none}
+  .brand-name{font-size:26px}
+}
+.eyebrow{color:var(--gold)}
+.lead-strong,.hero-copy p strong{color:#fff}
+h2 span.mark{background:linear-gradient(transparent 66%,rgba(212,175,55,.28) 0);color:#fff}
+
+/* золотая линия-разделитель между секциями */
+.principles,.marquee,.portfolio,.master-section,.services,.process-section,.faq-section,.contact-section,footer{
+  border-top:1px solid var(--gold-line)}
+.section-heading h2:after,.contact-heading h2:after{
+  content:'';display:block;width:76px;height:1px;margin-top:22px;
+  background:linear-gradient(90deg,var(--gold),transparent)}
+
+/* ---------- поверхности секций: глубокий графит с мягкими градиентами ---------- */
+.master-section{background:linear-gradient(180deg,var(--lux-2),#0c0c10)}
+.process-section{background:linear-gradient(180deg,#0d0d12,var(--lux-2))}
+.contact-section{background:linear-gradient(155deg,#131318,#0b0b0f 58%,#07070a)}
+footer{background:var(--lux-1)}
+.services{background:var(--lux-1)}
+
+/* ---------- шапка: стекло с золотой нитью ---------- */
+.header.is-scrolled{background:rgba(10,10,10,.72);backdrop-filter:blur(18px) saturate(1.25);
+  border-bottom:1px solid var(--gold-line);box-shadow:0 24px 60px -40px rgba(0,0,0,.9)}
+.brand-name,.brand-kitchen{color:#fff;font-family:var(--display)}
+.brand-caption{color:var(--gold-soft)}
+.desktop-nav a{color:#d8d2c6}
+.desktop-nav a:hover{color:var(--gold-soft)}
+
+/* ---------- первый экран ---------- */
+.hero{background:var(--lux-1)}
+.hero-media{background:#0b0b0e}
+.hero-media:after{background:linear-gradient(transparent,rgba(6,6,8,.86))}
+.hero-progress{background:rgba(255,255,255,.16)}
+.hero-progress i{background:linear-gradient(90deg,var(--gold),var(--gold-soft))}
+.spotlight{background:radial-gradient(520px circle at var(--mx,55%) var(--my,40%),var(--gold-glow),transparent 64%)}
+.hero-bottom{border-top:1px solid var(--gold-line);color:var(--gold-soft)}
+
+/* ---------- бегущая лента ---------- */
+.marquee{background:rgba(255,255,255,.02)}
+.marquee-track{color:#8f8879}
+.marquee-track b,.marquee-track i{color:var(--gold)}
+
+/* ---------- стеклянные карточки ---------- */
+.service-card,.step,.faq-list>details,.channel-card,.contact-card,.principles span{
+  background:var(--lux-glass);border:1px solid var(--gold-line);
+  backdrop-filter:blur(10px);color:#e8e2d6}
+.service-card:hover,.step:hover,.channel-card:hover{background:rgba(212,175,55,.07);border-color:rgba(212,175,55,.42)}
+.service-card{box-shadow:0 30px 70px -46px rgba(0,0,0,.95)}
+.step-top span{color:var(--gold);opacity:.55}
+.faq-list details>summary{color:#f2ede3}
+.faq-list details p{color:var(--muted)}
+.master-copy p,.process-section p,.services p{color:#cfc8bb}
+.master-signoff,.location{color:var(--gold-soft)}
+
+/* ---------- плитки каталога ---------- */
+.cat-card{background:var(--lux-3);border:1px solid var(--gold-line)}
+.cat-card:hover{box-shadow:0 40px 80px -40px rgba(0,0,0,.95);border-color:rgba(212,175,55,.45)}
+.cat-card .cat-shade{background:linear-gradient(transparent,rgba(6,6,8,.92))}
+.cat-name{font-family:var(--display);color:#fff}
+.cat-copy{color:#f4efe6}
+
+/* ---------- окна, галерея, лайтбокс ---------- */
+.modal-backdrop{background:rgba(4,4,6,.82);backdrop-filter:blur(6px)}
+.modal{background:linear-gradient(180deg,var(--lux-3),var(--lux-2));border:1px solid var(--gold-line);
+  box-shadow:0 60px 120px -60px rgba(0,0,0,1)}
+.modal-content{color:#e8e2d6}
+.gallery-head{border-bottom:1px solid var(--gold-line)}
+.gallery-grid img{border:1px solid rgba(212,175,55,.10)}
+.lightbox{background:rgba(4,4,6,.96)}
+.lightbox-close,.modal-close{color:var(--gold-soft)}
+.lightbox-nav{color:var(--gold-soft)}
+
+/* ---------- кнопки: золото, свечение, блик ---------- */
+.button-primary{
+  background:linear-gradient(135deg,var(--gold) 0%,#c39a2f 55%,var(--gold-deep) 100%);
+  color:#0a0a0a;border:0;font-weight:600;letter-spacing:.05em}
+.button-primary:hover{background:linear-gradient(135deg,var(--gold-soft),var(--gold) 60%);
+  box-shadow:0 22px 48px -22px rgba(212,175,55,.6)}
+.button-secondary,.button-ghost,.text-link{color:var(--gold-soft);border-color:var(--gold-line)}
+.button-secondary:hover,.button-ghost:hover{background:rgba(212,175,55,.08);border-color:var(--gold)}
+.header-cta{border:1px solid var(--gold-line);color:var(--gold-soft);background:transparent}
+.header-cta:hover{background:var(--gold);color:#0a0a0a;border-color:var(--gold)}
+.circle-arrow{border-color:var(--gold-line);color:var(--gold-soft)}
+.circle-arrow:hover{background:rgba(212,175,55,.14);border-color:var(--gold)}
+
+/* ---------- формы ---------- */
+input,select,textarea{background:rgba(255,255,255,.03);border:1px solid var(--gold-line);color:#f2ede3}
+input::placeholder,textarea::placeholder,.optional{color:#8f8879}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(212,175,55,.14)}
+.modal-channels button{border:1px solid var(--gold-line);color:var(--gold-soft);background:transparent}
+.modal-channels button:hover{background:rgba(212,175,55,.12);border-color:var(--gold)}
+
+/* ---------- подвал ---------- */
+.footer-top,.footer-links a,.footer-bottom{color:#b9b1a2}
+.footer-links a:hover{color:var(--gold-soft)}
+.footer .brand-dot{color:var(--gold)}
+
+/* ---------- мелочи: скроллбар, выделение, зерно ---------- */
+::selection{background:rgba(212,175,55,.32);color:#fff}
+*{scrollbar-color:var(--gold) #0e0e12}
+::-webkit-scrollbar-track{background:#0e0e12}
+::-webkit-scrollbar-thumb{background:#6b5a2c;border:2px solid #0e0e12}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+.site-grain{opacity:.055;mix-blend-mode:screen}
+
+/* ---------- preloader: чёрный + золотой монограмм ---------- */
+.intro{background:radial-gradient(120% 120% at 50% 0%,#14141a 0%,#08080b 60%,#050507 100%);color:#f4efe6}
+.intro-mark{font-family:var(--display);font-size:42px;letter-spacing:.04em}
+.intro-mark span{color:var(--gold)}
+.intro-line{width:180px;background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  animation:lux-line 1.1s var(--ease) both}
+@keyframes lux-line{from{transform:scaleX(.2);opacity:.2}to{transform:scaleX(1);opacity:1}}
+.intro small{color:var(--gold-soft);letter-spacing:.4em}
+
+/* ---------- курсор (только точные указатели) ---------- */
+@media (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .lux-dot,.lux-ring{position:fixed;top:0;left:0;z-index:320;pointer-events:none;border-radius:50%;
+    transform:translate3d(-50%,-50%,0);will-change:transform}
+  .lux-dot{width:6px;height:6px;background:var(--gold)}
+  .lux-ring{width:34px;height:34px;border:1px solid rgba(212,175,55,.55);
+    transition:width .28s var(--ease),height .28s var(--ease),border-color .28s var(--ease),opacity .28s}
+  .lux-ring.is-active{width:56px;height:56px;border-color:var(--gold)}
+  body.lux-cursor{cursor:none}
+  body.lux-cursor a,body.lux-cursor button{cursor:none}
+}
+
+/* ---------- липкие секции с parallax-фоном ---------- */
+.parallax-media{will-change:transform}
+
+/* плавное появление заголовков лесенкой */
+.stagger>*{opacity:0;transform:translateY(18px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.stagger.is-in>*{opacity:1;transform:none}
+.stagger.is-in>*:nth-child(2){transition-delay:.08s}
+.stagger.is-in>*:nth-child(3){transition-delay:.16s}
+.stagger.is-in>*:nth-child(4){transition-delay:.24s}
+.stagger.is-in>*:nth-child(5){transition-delay:.32s}
+
+@media(prefers-reduced-motion:reduce){
+  .lux-dot,.lux-ring{display:none}
+  body.lux-cursor{cursor:auto}
+  .stagger>*{opacity:1;transform:none}
+}
