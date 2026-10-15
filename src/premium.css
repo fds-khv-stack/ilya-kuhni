@@ -203,3 +203,37 @@ h2 span.mark{background:linear-gradient(transparent 62%,rgba(201,161,90,.42) 0);
 input:focus,select:focus,textarea:focus{border-color:#b3925f;box-shadow:0 0 0 4px rgba(201,161,90,.15)}
 input::placeholder,textarea::placeholder,.optional{color:#9d8b78}
 a{text-decoration-color:var(--brass)}
+
+
+/* ============ мобильная доработка (15.10.2026) ============ */
+/* Тач-устройства (телефон и планшет): читаемость подписей и зоны нажатия */
+@media(max-width:1023px){
+  .eyebrow,.principles span,.location,.hero-note,.image-top-note,.brand-caption,.hero-project small,
+  .photo-label,.step-top small,.footer-bottom,.footer-bottom button,.contact-bottom,.channel-card span,
+  .portfolio-count,.faq-list summary,.footer-links,.back-top,.section-heading>p,.modal-content .eyebrow{font-size:11px;line-height:1.5}
+  .channel-card span,.contact-bottom,.footer-bottom,.footer-bottom button,.brand-caption{font-size:11px}
+  .faq-list details p,.step>p,.section-heading>p,.master-copy>p,.modal-content>p,.service-copy p{font-size:12.5px;line-height:1.75}
+  .mobile-menu-button{width:44px;height:44px}
+  .desktop-nav a{font-size:11px;min-height:44px;display:inline-flex;align-items:center}
+  .cat-count,.hero-bottom p{font-size:11px;line-height:1.5}
+  .image-pagination,.image-pagination b{font-size:11px}
+  .marquee-track span{font-size:11px}
+  .header-cta,.filter,.modal-channels button,.image-pagination,.lightbox-close,.modal-close,
+  .back-top,.text-link,.footer-bottom button,.channel-card{min-height:44px}
+  .back-top,.text-link,.footer-bottom button{display:inline-flex;align-items:center}
+  .modal-channels button,.filter{display:inline-flex;align-items:center;justify-content:center}
+  /* оставшиеся ссылки-«мелочь» — тоже удобные зоны нажатия */
+  .contact-bottom a,.footer-links a,.footer-bottom a,.footer p a,.brand{min-height:44px;display:inline-flex;align-items:center}
+  /* ничего не переносится по строкам в кнопках шапки и фильтрах */
+  .header-cta,.button,.filter,.mobile-nav a,.back-top{white-space:nowrap}
+}
+/* Телефон: раскладка первого экрана */
+@media(max-width:700px){
+  /* БАГ: в мобильной раскладке .hero-media схлопывался в 0 высоты — фото героя не было видно */
+  .hero-media{height:460px;margin:0 12px;border-radius:4px}
+  .hero-media img{object-position:center 58%}
+  .step{padding-left:60px}
+}
+@media(max-width:380px){
+  .hero-media{height:405px}
+}
