@@ -115,7 +115,7 @@ h2 span.mark{background:linear-gradient(transparent 62%,rgba(201,161,90,.42) 0);
 .channel-card:hover{background:rgba(201,161,90,.16);border-color:rgba(201,161,90,.5)}
 .services .service-card{box-shadow:0 28px 55px -30px rgba(43,26,16,.6)}
 
-.cat-grid>.cat-card:last-child:nth-child(4n+3){grid-column:span 2}
+@media(min-width:641px){.cat-grid>.cat-card:last-child:nth-child(4n+3){grid-column:span 2}}
 @media(max-width:1150px){.cat-grid{grid-template-columns:repeat(2,1fr)}.gallery-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){
   .cat-grid{grid-template-columns:1fr;gap:13px}.cat-card{height:250px}
