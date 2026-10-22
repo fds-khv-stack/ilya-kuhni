@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-22",
+  "source": "DESIGN.md, package.json, src/index.css, src/premium.css, src/luxury.css",
+  "framework": "React 19 + Vite + TypeScript",
+  "fonts": "Cormorant Garamond display, Manrope body",
+  "palette": "warm paper, timber-dark ink, restrained brass",
+  "motion": "manual photography navigation; decorative reveals removed",
+  "spacing": "named four-point increments in tokens.css"
+}
