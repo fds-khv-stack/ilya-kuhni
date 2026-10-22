@@ -3,6 +3,7 @@ import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 're
 import { sections } from './data/gallery';
 import type { GallerySection } from './data/gallery';
 import { CONTACT } from './data/contact';
+import InteriorFilms from './InteriorFilms';
 
 const HERO_IMAGES = ['/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg', '/images/hero-4.jpg', '/images/hero-5.jpg', '/images/hero-6.jpg', '/images/hero-7.jpg', '/images/hero-8.jpg', '/images/hero-9.jpg'];
 const delay = (ms: number): CSSProperties => ({ ['--d' as string]: `${ms}ms` });
@@ -154,6 +155,7 @@ export default function App() {
         
       </section>
       <div className="principles container"><div data-reveal style={delay(0)}><Icon name="ruler" size={26} /><span>По вашим размерам.<br /><strong>Под ваш образ жизни.</strong></span></div><div data-reveal style={delay(90)}><Icon name="leaf" size={26} /><span>Материалы, к которым<br /><strong>приятно прикоснуться.</strong></span></div><div data-reveal style={delay(180)}><Icon name="hand" size={26} /><span>Один мастер.<br /><strong>Личная ответственность.</strong></span></div></div>
+      <InteriorFilms />
       <nav className="category-nav container" aria-label="Направления мебели">{sections.map(section => <button key={section.slug} onClick={() => setGallery(section)}>{section.title}<Icon name="diagonal" size={14} /></button>)}</nav>
       <section id="portfolio" className="portfolio section container" data-reveal>
         <div className="section-heading"><div><div className="eyebrow">Работы мастерской</div><h2 data-reveal>Посмотрите,<br /><span className="mark">что мы сделали.</span></h2></div><p data-reveal>Работы мастерской по семи направлениям. Откройте раздел и рассмотрите детали.</p></div>
@@ -169,7 +171,7 @@ export default function App() {
     {gallery && <SectionModal section={gallery} onClose={() => setGallery(null)} />}
     <div className="site-grain" />
     {contact && <Modal onClose={() => setContact(false)} title="Обсудить проект с Ильёй"><div className="modal-content contact-modal"><div className="eyebrow">Начнём с вашей идеи</div><h2>{service}</h2><p>Расскажите Илье, какую мебель хотите создать. Вместе обсудите планировку, материалы и следующие шаги.</p><ul className="call-checklist"><li>Где будет стоять мебель и какие у неё размеры</li><li>Что важно: хранение, стиль, материалы</li><li>Желаемые сроки и ориентир по бюджету</li></ul><a className="contact-phone" href={CONTACT.href}>{CONTACT.label}</a><a className="button button-primary" href={CONTACT.href}><Icon name="phone" />Позвонить Илье</a><p className="fine-print">Не знаете точных размеров? Начните с разговора — детали можно уточнить на замере.</p></div></Modal>}
-    {privacy && <Modal onClose={() => setPrivacy(false)} title="О данных на сайте"><div className="modal-content"><div className="eyebrow">О данных на сайте</div><h2>Конфиденциальность</h2><p>На сайте нет форм сбора заявок, регистрации и онлайн-оплаты. Для обсуждения проекта можно позвонить Илье по указанному номеру. Кнопка звонка открывает приложение для звонков на вашем устройстве.</p><p>Сайт не использует инструменты рекламной аналитики и не записывает введённые вами персональные данные. Фотографии загружаются с этого же сайта; шрифты — с Google Fonts. При загрузке страницы хостинг и поставщик шрифтов получают технические данные запроса, включая IP-адрес.</p><p>Ссылка на Telegram внизу страницы относится только к разработчику сайта.</p></div></Modal>}
+    {privacy && <Modal onClose={() => setPrivacy(false)} title="О данных на сайте"><div className="modal-content"><div className="eyebrow">О данных на сайте</div><h2>Конфиденциальность</h2><p>На сайте нет форм сбора заявок, регистрации и онлайн-оплаты. Для обсуждения проекта можно позвонить Илье по указанному номеру. Кнопка звонка открывает приложение для звонков на вашем устройстве.</p><p>Сайт не использует инструменты рекламной аналитики и не записывает введённые вами персональные данные. Фотографии и видео загружаются с этого же сайта; шрифты — с Google Fonts. При загрузке страницы хостинг и поставщик шрифтов получают технические данные запроса, включая IP-адрес.</p><p>Ссылка на Telegram внизу страницы относится только к разработчику сайта.</p></div></Modal>}
     <a className="mobile-call" href={CONTACT.href}><Icon name="phone" size={19} /><span>Позвонить Илье<small>{CONTACT.label}</small></span><Icon name="diagonal" size={18} /></a>
   </>;
 }
