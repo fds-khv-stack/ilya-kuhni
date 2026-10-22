@@ -233,3 +233,8 @@ a{text-decoration-color:var(--brass)}
 @media(max-width:380px){
   .hero-media{height:405px}
 }
+
+/* Keyboard-accessible gallery controls. */
+.gallery-photo{display:block;padding:0;width:100%;overflow:hidden;border-radius:2px}
+.lightbox-nav{display:flex;align-items:center;gap:20px}
+.lightbox-nav button{min-width:44px;min-height:44px;font-size:24px}

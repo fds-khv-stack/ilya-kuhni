@@ -54,14 +54,17 @@ function Brand({ light = false }: { light?: boolean }) {
 }
 function Modal({ children, onClose, title }: { children: ReactNode; onClose: () => void; title: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  useEffect(() => { closeRef.current = onClose; }, [onClose]);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     ref.current?.focus();
     const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') closeRef.current();
       if (e.key === 'Tab') {
-        const items = ref.current?.querySelectorAll<HTMLElement>('button, a[href], input, textarea, select, [tabindex="0"]');
+        const items = Array.from(ref.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex="0"]') ?? []).filter(el => el.getClientRects().length > 0);
         if (!items?.length) return;
         const first = items[0], last = items[items.length - 1];
         if (e.shiftKey && (document.activeElement === first || document.activeElement === ref.current)) { e.preventDefault(); last.focus(); }
@@ -69,8 +72,8 @@ function Modal({ children, onClose, title }: { children: ReactNode; onClose: () 
       }
     };
     document.addEventListener('keydown', key);
-    return () => { document.body.style.overflow = ''; document.removeEventListener('keydown', key); previous?.focus(); };
-  }, [onClose]);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', key); previous?.focus(); };
+  }, []);
   return <div className="modal-backdrop" onClick={onClose}><div className="modal" ref={ref} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} onClick={e => e.stopPropagation()}><button className="modal-close icon-button" onClick={onClose} aria-label="Закрыть"><Icon name="close" /></button>{children}</div></div>;
 }
 // Плитка раздела: кроссфейд-смена фото при наведении (двойная буферизация — в DOM максимум 2 фото).
@@ -81,7 +84,7 @@ function CatCard({ section, delayMs, onOpen }: { section: GallerySection; delayM
   const timer = useRef<number | null>(null);
   const stop = () => { if (timer.current !== null) { window.clearInterval(timer.current); timer.current = null; } };
   const start = () => {
-    if (n < 2 || timer.current !== null) return;
+    if (n < 2 || timer.current !== null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     timer.current = window.setInterval(() => setBuf(prev => {
       const hidden = prev.active === 0 ? 1 : 0;
       const idx = prev.idx.slice();
@@ -103,6 +106,13 @@ function CatCard({ section, delayMs, onOpen }: { section: GallerySection; delayM
 function SectionModal({ section, onClose }: { section: GallerySection; onClose: () => void }) {
   const n = section.photos.length;
   const [photo, setPhoto] = useState<number | null>(null);
+  const photoTrigger = useRef<HTMLButtonElement | null>(null);
+  const closePhoto = useRef<HTMLButtonElement>(null);
+  const viewingPhoto = photo !== null;
+  useEffect(() => {
+    if (viewingPhoto) closePhoto.current?.focus();
+    else photoTrigger.current?.focus();
+  }, [viewingPhoto]);
   useEffect(() => {
     if (photo === null) return;
     const key = (e: KeyboardEvent) => {
@@ -113,8 +123,8 @@ function SectionModal({ section, onClose }: { section: GallerySection; onClose: 
     document.addEventListener('keydown', key, true);
     return () => document.removeEventListener('keydown', key, true);
   }, [photo, n]);
-  return <Modal onClose={onClose} title={section.title}>
-    <div className="modal-content">
+  return <Modal onClose={viewingPhoto ? () => setPhoto(null) : onClose} title={viewingPhoto ? `${section.title} — просмотр фото` : section.title}>
+    <div className="modal-content" hidden={viewingPhoto}>
       <div className="gallery-head">
         <div><div className="eyebrow">Каталог мастерской</div><h2>{section.title}</h2></div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexShrink: 0 }}>
@@ -123,13 +133,17 @@ function SectionModal({ section, onClose }: { section: GallerySection; onClose: 
         </div>
       </div>
       <div className="gallery-grid">
-        {section.photos.map((src, i) => <Pic key={src} src={src} alt={`${section.title} — фото ${i + 1}`} onClick={() => setPhoto(i)} />)}
+        {section.photos.map((src, i) => <button className="gallery-photo" key={src} type="button" aria-label={`Открыть фото ${i + 1}: ${section.title}`} onClick={e => { photoTrigger.current = e.currentTarget; setPhoto(i); }}><Pic src={src} alt={`${section.title} — фото ${i + 1}`} /></button>)}
       </div>
     </div>
     {photo !== null && <div className="lightbox" onClick={() => setPhoto(null)}>
       <Pic src={section.photos[photo]} alt={`${section.title} — фото ${photo + 1}`} light={false} loading="eager" onClick={e => e.stopPropagation()} />
-      <button className="lightbox-close icon-button" onClick={() => setPhoto(null)} aria-label="Закрыть фото"><Icon name="close" /></button>
-      <span className="lightbox-nav">← → / Esc</span>
+      <button ref={closePhoto} className="lightbox-close icon-button" onClick={() => setPhoto(null)} aria-label="Закрыть фото"><Icon name="close" /></button>
+      <div className="lightbox-nav" onClick={e => e.stopPropagation()}>
+        <button type="button" aria-label="Предыдущее фото" onClick={() => setPhoto((photo - 1 + n) % n)}>←</button>
+        <span role="status">{photo + 1} / {n}</span>
+        <button type="button" aria-label="Следующее фото" onClick={() => setPhoto((photo + 1) % n)}>→</button>
+      </div>
     </div>}
   </Modal>;
 }
@@ -151,7 +165,7 @@ export default function App() {
     else window.addEventListener('load', preload, { once: true });
     return () => window.removeEventListener('load', preload);
   }, []);
-  useEffect(() => { const t = window.setTimeout(() => setHeroSlide(s => (s + 1) % HERO_IMAGES.length), HERO_MS); return () => window.clearTimeout(t); }, [heroSlide]);
+  useEffect(() => { if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; const t = window.setTimeout(() => setHeroSlide(s => (s + 1) % HERO_IMAGES.length), HERO_MS); return () => window.clearTimeout(t); }, [heroSlide]);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
@@ -183,7 +197,7 @@ export default function App() {
     hosts.forEach((_, host) => observer.observe(host));
     return () => observer.disconnect();
   }, []);
-  const scrollToContact = () => { setMenu(false); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); };
+  const scrollToContact = () => { setMenu(false); document.getElementById('contact')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); };
   const openContact = (selectedChannel = 'Telegram', selectedService = 'Кухня') => { setChannel(selectedChannel); setService(selectedService); setMessage(''); setCopied(false); setContact(true); setMenu(false); };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
