@@ -1,0 +1,27 @@
+/* Ilya Kitchens · editorial photographic design tokens */
+:root {
+  --color-paper: oklch(95% .012 85);
+  --color-paper-2: oklch(91% .016 83);
+  --color-ink: oklch(22% .018 65);
+  --color-ink-2: oklch(39% .018 65);
+  --color-dark: oklch(20% .018 67);
+  --color-dark-2: oklch(26% .020 67);
+  --color-light: oklch(96% .009 85);
+  --color-rule: oklch(74% .016 80);
+  --color-rule-dark: oklch(45% .020 70);
+  --color-accent: oklch(61% .075 76);
+  --color-focus: oklch(70% .10 80);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Manrope', Arial, sans-serif;
+  --space-xs: .5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+  --space-3xl: 7rem;
+  --space-4xl: 10rem;
+  --ease-out: cubic-bezier(.16,1,.3,1);
+  --dur-short: 220ms;
+  --radius-card: 0;
+}
