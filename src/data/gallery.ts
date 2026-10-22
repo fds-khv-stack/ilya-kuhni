@@ -7,9 +7,10 @@ export const sections: GallerySection[] = [
     "count": 50,
     "cover": "/gallery/kuhni/cover.jpg",
     "photos": [
+      "/gallery/kuhni/p36.jpg",
+      "/gallery/kuhni/p3.jpg",
       "/gallery/kuhni/p1.jpg",
       "/gallery/kuhni/p2.jpg",
-      "/gallery/kuhni/p3.jpg",
       "/gallery/kuhni/p4.jpg",
       "/gallery/kuhni/p5.jpg",
       "/gallery/kuhni/p6.jpg",
@@ -42,7 +43,6 @@ export const sections: GallerySection[] = [
       "/gallery/kuhni/p33.jpg",
       "/gallery/kuhni/p34.jpg",
       "/gallery/kuhni/p35.jpg",
-      "/gallery/kuhni/p36.jpg",
       "/gallery/kuhni/p37.jpg",
       "/gallery/kuhni/p38.jpg",
       "/gallery/kuhni/p39.jpg",
@@ -65,6 +65,7 @@ export const sections: GallerySection[] = [
     "count": 54,
     "cover": "/gallery/shkafy/cover.jpg",
     "photos": [
+      "/gallery/shkafy/p12.jpg",
       "/gallery/shkafy/p1.jpg",
       "/gallery/shkafy/p2.jpg",
       "/gallery/shkafy/p3.jpg",
@@ -76,7 +77,6 @@ export const sections: GallerySection[] = [
       "/gallery/shkafy/p9.jpg",
       "/gallery/shkafy/p10.jpg",
       "/gallery/shkafy/p11.jpg",
-      "/gallery/shkafy/p12.jpg",
       "/gallery/shkafy/p13.jpg",
       "/gallery/shkafy/p14.jpg",
       "/gallery/shkafy/p15.jpg",
@@ -127,8 +127,8 @@ export const sections: GallerySection[] = [
     "count": 20,
     "cover": "/gallery/tumby/cover.jpg",
     "photos": [
-      "/gallery/tumby/p1.jpg",
       "/gallery/tumby/p2.jpg",
+      "/gallery/tumby/p1.jpg",
       "/gallery/tumby/p3.jpg",
       "/gallery/tumby/p4.jpg",
       "/gallery/tumby/p5.jpg",
@@ -155,6 +155,7 @@ export const sections: GallerySection[] = [
     "count": 19,
     "cover": "/gallery/vannaya/cover.jpg",
     "photos": [
+      "/gallery/vannaya/p18.jpg",
       "/gallery/vannaya/p1.jpg",
       "/gallery/vannaya/p2.jpg",
       "/gallery/vannaya/p3.jpg",
@@ -172,7 +173,6 @@ export const sections: GallerySection[] = [
       "/gallery/vannaya/p15.jpg",
       "/gallery/vannaya/p16.jpg",
       "/gallery/vannaya/p17.jpg",
-      "/gallery/vannaya/p18.jpg",
       "/gallery/vannaya/p19.jpg"
     ]
   },
@@ -199,10 +199,10 @@ export const sections: GallerySection[] = [
     "count": 6,
     "cover": "/gallery/prihozhie/cover.jpg",
     "photos": [
+      "/gallery/prihozhie/p4.jpg",
       "/gallery/prihozhie/p1.jpg",
       "/gallery/prihozhie/p2.jpg",
       "/gallery/prihozhie/p3.jpg",
-      "/gallery/prihozhie/p4.jpg",
       "/gallery/prihozhie/p5.jpg",
       "/gallery/prihozhie/p6.jpg"
     ]
@@ -224,10 +224,10 @@ export const sections: GallerySection[] = [
     "count": 4,
     "cover": "/gallery/ofis/cover.jpg",
     "photos": [
+      "/gallery/ofis/p4.jpg",
       "/gallery/ofis/p1.jpg",
       "/gallery/ofis/p2.jpg",
-      "/gallery/ofis/p3.jpg",
-      "/gallery/ofis/p4.jpg"
+      "/gallery/ofis/p3.jpg"
     ]
   }
 ];
