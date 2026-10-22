@@ -322,10 +322,11 @@ body.is-ready .hero h1 .line:nth-child(3)>span{animation-delay:.18s}
 .mega-block .mega-meta span b{font-weight:500;color:#f4efe6}
 
 /* 3. Спотлайт на фото мастера: свет идёт за курсором, на телефоне — по прокрутке */
-.master-photo .spot-dim{position:absolute;inset:0;z-index:1;pointer-events:none;background:#08080b;
-  --r:clamp(200px,26vw,320px);--x:50%;--y:42%;
-  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 56%,#000 78%);
-  mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 56%,#000 78%)}
+.master-photo .spot-dim{position:absolute;inset:0;z-index:1;pointer-events:none;background:rgba(8,8,11,.93);
+  --r:clamp(240px,30vw,380px);--x:50%;--y:42%;
+  /* край мягкий: переход 38% → 90%, иначе круг читается как «дырка» */
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 38%,#000 90%);
+  mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 38%,#000 90%)}
 .master-photo .photo-label{z-index:2}
 
 @media(max-width:700px){
