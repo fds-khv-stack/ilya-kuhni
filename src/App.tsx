@@ -3,6 +3,8 @@ import type { CSSProperties, FormEvent, MouseEvent as ReactMouseEvent, ReactNode
 import { sections } from './data/gallery';
 import type { GallerySection } from './data/gallery';
 
+// Приёмник заявок: контейнер ilya-lead на VPS за Caddy.
+const LEAD_ENDPOINT = 'https://185-182-65-227.sslip.io/ilya-lead/lead';
 const HERO_MS = 4000;
 const TILE_MS = 2000;
 const HERO_IMAGES = ['/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg', '/images/hero-4.jpg', '/images/hero-5.jpg', '/images/hero-6.jpg', '/images/hero-7.jpg', '/images/hero-8.jpg', '/images/hero-9.jpg'];
@@ -39,7 +41,7 @@ function Icon({ name, size = 20, ...props }: { name: IconName; size?: number; cl
 }
 const channels: { name: string; icon: IconName; subtitle: string; href?: string }[] = [
   { name: 'Telegram', icon: 'telegram', subtitle: 'Написать в Telegram', href: 'https://t.me/Dmitrii_khv27' },
-  { name: 'WhatsApp', icon: 'whatsapp', subtitle: 'Обсудить детали', href: 'https://wa.me/79144009922' },
+  { name: 'WhatsApp', icon: 'whatsapp', subtitle: 'Обсудить детали', href: 'https://wa.me/79147719148' },
   { name: 'Max', icon: 'max', subtitle: 'Начать разговор' },
   { name: 'Позвонить', icon: 'phone', subtitle: '+7 914 771-91-48', href: 'tel:+79147719148' },
 ];
@@ -143,6 +145,7 @@ export default function App() {
   const [channel, setChannel] = useState('Telegram');
   const [service, setService] = useState('Кухня');
   const [message, setMessage] = useState('');
+  const [sendState, setSendState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
   const [copied, setCopied] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   useEffect(() => {
@@ -188,7 +191,27 @@ export default function App() {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    setMessage(`Здравствуйте, Илья! Меня зовут ${data.get('name')}.\nХочу обсудить проект: ${data.get('service')}.\n${data.get('description') || 'Детали хотел(а) бы обсудить лично.'}\nУдобный способ связи: ${channel}.\nМой контакт: ${data.get('connection')}.`);
+    const name = String(data.get('name') || '');
+    const connection = String(data.get('connection') || '');
+    const task = String(data.get('service') || '');
+    const description = String(data.get('description') || '');
+    setMessage(`Здравствуйте, Илья! Меня зовут ${name}.
+Хочу обсудить проект: ${task}.
+${description || 'Детали хотел(а) бы обсудить лично.'}
+Удобный способ связи: ${channel}.
+Мой контакт: ${connection}.`);
+    if (!LEAD_ENDPOINT) { setSendState('failed'); return; }
+    setSendState('sending');
+    const timer = window.setTimeout(() => setSendState('failed'), 12000);
+    fetch(LEAD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, contact: connection, service: task, description, channel, website: String(data.get('website') || '') }),
+    })
+      .then(r => r.json().catch(() => ({})).then(body => ({ ok: r.ok, body })))
+      .then(({ ok, body }) => setSendState(ok && (body as { ok?: boolean }).ok !== false ? 'sent' : 'failed'))
+      .catch(() => setSendState('failed'))
+      .finally(() => window.clearTimeout(timer));
   };
   const download = () => { const url = URL.createObjectURL(new Blob([message], { type: 'text/plain;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'Мой проект — Илья кухни.txt'; a.click(); URL.revokeObjectURL(url); };
   return <>
@@ -221,7 +244,12 @@ export default function App() {
     {gallery && <SectionModal section={gallery} onClose={() => setGallery(null)} />}
     {intro && <div className="intro"><div className="intro-mark">илья<span>.</span>кухни</div><div className="intro-line" /><small>мастерская авторской мебели</small></div>}
     <div className="site-grain" />
-    {contact && <Modal onClose={() => setContact(false)} title="Обсудить проект"><div className="modal-content contact-modal"><div className="eyebrow">Первый шаг к вашей мебели</div><h2>{message ? 'Начало положено.' : 'Давайте знакомиться.'}</h2>{!message ? <><p>Пара слов о вашей идее — и у нас уже будет отправная точка для разговора.</p><div className="modal-channels">{channels.map(item => <button key={item.name} type="button" className={channel === item.name ? 'selected' : ''} onClick={() => setChannel(item.name)} aria-pressed={channel === item.name}><Icon name={item.icon} size={17} />{item.name}</button>)}</div><form onSubmit={submit}><div className="form-row"><label>Как к вам обращаться<input name="name" placeholder="Ваше имя" required maxLength={80} autoComplete="given-name" /></label><label>{channel === 'Позвонить' || channel === 'WhatsApp' ? 'Номер телефона' : 'Телефон или никнейм'}<input name="connection" placeholder={channel === 'Telegram' ? '@username или +7…' : '+7…'} required minLength={5} maxLength={100} autoComplete="tel" /></label></div><label>Что хотите создать<select name="service" value={service} onChange={e => setService(e.target.value)}><option>Кухня</option><option>Шкаф / гардеробная</option><option>Мебель для гостиной</option><option>Несколько предметов мебели</option></select></label><label>Расскажите об идее <span className="optional">необязательно</span><textarea name="description" placeholder="Размеры, стиль, материалы или то, что для вас важно…" rows={3} maxLength={2000} /></label><button className="button button-primary form-submit" type="submit">Подготовить сообщение<Icon name="arrow" /></button><p className="fine-print">Это демонстрационная форма: данные никуда не отправляются и не сохраняются. Вы сможете скопировать или скачать подготовленное сообщение. Контакты мастерской будут подключены перед запуском.</p></form></> : <><p>Ваше сообщение готово. Сохраните его для разговора с мастером.</p><pre className="message-preview">{message}</pre><div className="result-actions"><button className="button button-primary" onClick={async () => { try { await navigator.clipboard.writeText(message); setCopied(true); } catch { download(); } }}>{copied ? 'Скопировано' : 'Скопировать'}<Icon name={copied ? 'check' : 'arrow'} /></button><button className="button button-outline" onClick={download}>Скачать .txt</button></div><p role="status" className="fine-print">{copied ? 'Сообщение в буфере обмена. ' : ''}Заявка не отправлена. В демонстрационной версии контакты мастерской не подключены.</p><button className="text-link" onClick={() => { setMessage(''); setCopied(false); }}>Создать другое сообщение</button></>}</div></Modal>}
+    {contact && <Modal onClose={() => setContact(false)} title="Обсудить проект"><div className="modal-content contact-modal"><div className="eyebrow">Первый шаг к вашей мебели</div><h2>{sendState === 'sending' ? 'Отправляем…' : sendState === 'sent' ? 'Заявка отправлена.' : message ? 'Начало положено.' : 'Давайте знакомиться.'}</h2>{!message ? <><p>Пара слов о вашей идее — и у нас уже будет отправная точка для разговора.</p><div className="modal-channels">{channels.map(item => <button key={item.name} type="button" className={channel === item.name ? 'selected' : ''} onClick={() => setChannel(item.name)} aria-pressed={channel === item.name}><Icon name={item.icon} size={17} />{item.name}</button>)}</div><form onSubmit={submit}><div className="form-row"><label>Как к вам обращаться<input name="name" placeholder="Ваше имя" required maxLength={80} autoComplete="given-name" /></label><label>{channel === 'Позвонить' || channel === 'WhatsApp' ? 'Номер телефона' : 'Телефон или никнейм'}<input name="connection" placeholder={channel === 'Telegram' ? '@username или +7…' : '+7…'} required minLength={5} maxLength={100} autoComplete="tel" /></label></div><label>Что хотите создать<select name="service" value={service} onChange={e => setService(e.target.value)}><option>Кухня</option><option>Шкаф / гардеробная</option><option>Мебель для гостиной</option><option>Несколько предметов мебели</option></select></label><label>Расскажите об идее <span className="optional">необязательно</span><textarea name="description" placeholder="Размеры, стиль, материалы или то, что для вас важно…" rows={3} maxLength={2000} /></label><button className="button button-primary form-submit" type="submit">Подготовить сообщение<Icon name="arrow" /></button><p className="fine-print">Заявка уходит напрямую Илье в Telegram. Если отправка не пройдёт, сообщение можно скопировать и отправить в мессенджер вручную.</p></form></> : <>
+          {sendState === 'sent'
+            ? <><p>Заявка ушла Илье в Telegram. Он ответит по указанному контакту — обычно в течение дня.</p><p role="status" className="fine-print">Если нужно срочно — позвоните: <a href="tel:+79147719148" style={{ color: 'var(--brass-soft)' }}>+7 914 771-91-48</a>.</p></>
+            : <><p>{sendState === 'sending' ? 'Отправляем заявку…' : 'Отправить автоматически не получилось. Скопируйте сообщение и пришлите его Илье в мессенджер.'}</p><pre className="message-preview">{message}</pre><div className="result-actions"><button className="button button-primary" onClick={async () => { try { await navigator.clipboard.writeText(message); setCopied(true); } catch { download(); } }}>{copied ? 'Скопировано' : 'Скопировать'}<Icon name={copied ? 'check' : 'arrow'} /></button><button className="button button-outline" onClick={download}>Скачать .txt</button></div><p role="status" className="fine-print">{copied ? 'Сообщение в буфере обмена. ' : ''}Заявка не отправлена автоматически.</p></>}
+          <button className="text-link" onClick={() => { setMessage(''); setCopied(false); setSendState('idle'); }}>Создать другое сообщение</button>
+        </>}</div></Modal>}
     {privacy && <Modal onClose={() => setPrivacy(false)} title="Конфиденциальность"><div className="modal-content"><div className="eyebrow">Ваши данные</div><h2>Конфиденциальность</h2><p>Этот сайт — интерактивная дизайн-концепция мастерской «Илья кухни». Поля формы обрабатываются только в вашем браузере: информация не передаётся на сервер и не сохраняется после закрытия страницы.</p><p>При нажатии «Скопировать» текст помещается в буфер обмена по вашему запросу. При нажатии «Скачать» создаётся текстовый файл на вашем устройстве.</p><p>Все фотографии загружаются с этого же сайта. Для отображения шрифтов браузер обращается к Google Fonts. Аналитика и рекламные cookies не используются.</p><p className="fine-print">Перед запуском сайта эта информация должна быть заменена политикой реального оператора персональных данных.</p></div></Modal>}
   </>;
 }

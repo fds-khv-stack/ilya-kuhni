@@ -10,7 +10,7 @@ function initIntro() {
   if (!intro) return;
   const started = performance.now();
   const hide = () => {
-    const wait = Math.max(0, 900 - (performance.now() - started));
+    const wait = Math.max(0, 1800 - (performance.now() - started));
     window.setTimeout(() => {
       intro.style.opacity = '0';
       intro.style.visibility = 'hidden';
