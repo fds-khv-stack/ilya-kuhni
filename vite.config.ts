@@ -12,7 +12,6 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
   // GitHub Pages отдаёт проект по адресу /<репозиторий>/, поэтому базовый путь задан явно
   base: '/ilya-kuhni/',
-  server: { allowedHosts: ['terminal.local'] },
   plugins: [react(), tailwindcss(), viteSingleFile()],
   build: {
     outDir: "build",

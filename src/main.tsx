@@ -3,8 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import "./premium.css";
 import "./luxury.css";
-import "../tokens.css";
-import "./atelier.css";
+import { initLux } from "./lux";
 import App from "./App";
 
 createRoot(document.getElementById("root")!).render(
@@ -12,3 +11,6 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>
 );
+
+// люкс-интерактив: курсор, магнитные кнопки, параллакс, счётчики, прелоадер
+initLux();
