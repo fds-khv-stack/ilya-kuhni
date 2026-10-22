@@ -16,11 +16,16 @@ SECTIONS = [
     ("stoly", "Столы", "Столы"),
     ("ofis", "Офисная_мебель", "Офисная мебель"),
 ]
-HERO = ["Modern Dark Wood Kitchen Ideas for a Luxurious Home.jpg",
+HERO = [
+        "Modern Dark Wood Kitchen Ideas for a Luxurious Home.jpg",
         "Без названия.jpg",
-        "Без названия (3).jpg",
+        "Без названия (5).jpg",
         "Без названия (1).jpg",
-        "a clock made out of books on the wall next to a couch and coffee table.jpg"]
+        "a clock made out of books on the wall next to a couch and coffee table.jpg",
+        "Без названия (2).jpg",
+        "Без названия (3).jpg",
+        "Без названия (4).jpg",
+        "Без названия (6).jpg"]
 MAX = 1400
 COVER_W = 900
 
