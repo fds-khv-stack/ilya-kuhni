@@ -280,3 +280,163 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 .header.is-scrolled .brand-name{font-size:32px}
 @media(min-width:901px){.mobile-menu-button{display:none}}
 @media(max-width:700px){.header.is-scrolled .brand-name{font-size:26px}}
+
+/* Concurrent main improvements retained during integration. */
+
+/* ============ МОБИЛЬНАЯ ДОВОДКА (22.10.2026) ============ */
+/* 1. Телефон: основной текст читается (было 11–12.5 px), а не мелкий серый шёпот */
+@media(max-width:700px){
+  .master-copy>p,.step>p,.faq-list details p,.service-copy p,.section-heading>p,
+  .contact-heading>p,.modal-content>p,.hero-subtitle{font-size:14.5px;line-height:1.72}
+  .faq-list summary{font-size:15px;line-height:1.45}
+  /* 2. Подписи-капсы: 11 → 12 px и спокойный трекинг */
+  .eyebrow,.cat-count,.photo-label,.hero-note,.brand-caption,.step-top small,.image-top-note,
+  .principles span,.footer-links,.footer-bottom,.footer-bottom button,.contact-bottom,
+  .channel-card span,.location,.hero-project small,.portfolio-count,.modal-content .eyebrow{
+    font-size:12px;letter-spacing:.1em;line-height:1.5}
+  /* три обещания в столбик: в три узких колонки текст не влезает и распирал страницу */
+  .principles{display:block;padding-block:4px}
+  .principles>div,.principles>div:first-child,.principles>div:last-child{
+    flex-direction:row;justify-content:flex-start;align-items:center;text-align:left;
+    border-right:0;border-bottom:1px solid var(--gold-line);padding:15px 2px;gap:14px}
+  .principles>div:last-child{border-bottom:0}
+  .principles svg{width:24px;height:24px;flex-shrink:0}
+  .principles span{font-size:13px;line-height:1.55}
+  .marquee-track,.marquee-track span{font-size:11px}
+  .text-link{font-size:13px;min-height:44px}
+  .master-signoff>span:last-child{font-size:12px}
+  /* 3. Формы: 16 px — иначе iOS зумит страницу при фокусе в поле */
+  input,select,textarea{font-size:16px;padding:14px 13px}
+  form label{font-size:13px}
+  .modal-channels button{font-size:12px;padding:11px 12px}
+  .message-preview{font-size:14px;line-height:1.7;padding:16px}
+  .fine-print,.modal-content .fine-print{font-size:12px;line-height:1.6}
+  .button{font-size:13px}
+  .result-actions{display:grid;grid-template-columns:1fr;gap:10px}
+  .result-actions .button{width:100%;justify-content:center;font-size:13px;min-height:48px}
+  /* 4. Окно каталога: меньше полей по краям, шапка переносится, а не распирает */
+  .gallery-grid{grid-template-columns:repeat(2,1fr);gap:8px;padding-inline:14px}
+  .gallery-head{flex-wrap:wrap;gap:10px 14px;padding-inline:14px}
+  .gallery-head h2{font-size:26px}
+  /* 5. Контакты: подписи в карточках не превращаются в столбик из трёх слов */
+  .channel-card{padding:16px 14px;gap:10px}
+  .channel-card strong{font-size:15px}
+  .channel-card span{font-size:11.5px;line-height:1.45;letter-spacing:.06em}
+  /* 6. Подвал и подпись автора (10 px инлайном — нечитаемо на телефоне) */
+  .footer p{font-size:12px!important;line-height:1.6}
+  .footer-links a,.back-top{font-size:12px;min-height:44px;display:inline-flex;align-items:center}
+  /* 6b. Карточки каталога чуть выше: в широкую рамку кроп срезал мебель по краям */
+  .cat-card{height:300px}
+  /* 6c. Золотая полоса скроллбара в мобильном превью висит по правому краю как артефакт */
+  *{scrollbar-width:none}
+  ::-webkit-scrollbar{width:0;height:0}
+}
+/* 7. Узкие телефоны (≤400 px): шапка перестаёт распирать экран (было 346 px при 310 доступных) */
+@media(max-width:400px){
+  .header-cta{display:none}
+  .header-inner{gap:10px}
+  .brand-name{font-size:24px}
+  .brand-kitchen{font-size:20px}
+  .hero h1{font-size:clamp(30px,8.4vw,40px)}
+  .hero-media{height:390px}
+  .channel-grid{grid-template-columns:1fr;gap:9px}
+  .channel-card>div{flex-basis:auto;min-width:0}
+  .gallery-grid{padding-inline:10px}
+  .gallery-head{padding-inline:10px}
+}
+/* 8. Тач-устройства: золотая полоса скроллбара по правому краю читается как артефакт */
+@media(hover:none){
+  *{scrollbar-width:none}
+  ::-webkit-scrollbar{width:0;height:0}
+}
+
+/* 9. Якоря: секция не уезжает под липкую шапку (80 px + воздух) */
+:where(section,footer,header)[id],#home,#contact,#portfolio,#master,#services,#process{scroll-margin-top:84px}
+
+/* ============ ЛАЙТБОКС: листание (22.10.2026) ============ */
+.lightbox{padding:0;background:#08080b}
+.lightbox-stage{display:flex;align-items:center;justify-content:center;width:100%;height:100%;
+  padding:64px 76px;touch-action:pan-y;transition:transform .28s var(--ease);will-change:transform}
+.lightbox-stage picture{display:flex;align-items:center;justify-content:center;max-width:100%;max-height:100%}
+.lightbox-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:3px;cursor:grab;animation:lb-in .3s var(--ease)}
+@keyframes lb-in{from{opacity:0;transform:scale(.99)}to{opacity:1;transform:none}}
+.lightbox-stage:active img{cursor:grabbing}
+/* кнопки листания: только там, где есть мышь */
+.lightbox-nav-btn{position:absolute;top:50%;transform:translateY(-50%);display:grid;place-items:center;
+  width:52px;height:52px;border-radius:50%;z-index:2;cursor:pointer;
+  color:var(--gold-soft);background:rgba(12,10,8,.55);border:1px solid rgba(212,175,55,.28);
+  backdrop-filter:blur(6px);transition:background .3s var(--ease),color .3s var(--ease),border-color .3s var(--ease)}
+.lightbox-nav-btn:hover,.lightbox-nav-btn:focus-visible{background:var(--gold);color:#14100a;border-color:var(--gold)}
+.lightbox-nav-btn.prev{left:18px}
+.lightbox-nav-btn.next{right:18px}
+.lightbox-nav-btn .flip{transform:scaleX(-1)}
+.lightbox-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:20px;width:max-content;
+  display:flex;align-items:center;justify-content:center;gap:14px;padding:9px 16px;border-radius:999px;
+  background:rgba(8,8,11,.62);border:1px solid rgba(212,175,55,.18);backdrop-filter:blur(6px);
+  color:var(--gold-soft);font-size:11px;letter-spacing:.18em;text-transform:uppercase;pointer-events:none}
+.lightbox-count{display:inline-flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.lightbox-count i{display:block;width:26px;height:1px;background:currentColor;opacity:.45}
+.lightbox-hint{opacity:.55}
+.hint-swipe{display:none}
+@media(max-width:700px){
+  .lightbox-nav-btn{display:none}
+  .lightbox-stage{padding:52px 0}
+  .lightbox-stage img{border-radius:0}
+  .lightbox-bar{bottom:14px;font-size:10px;gap:8px;padding:8px 13px;letter-spacing:.12em}
+  .hint-keys{display:none}
+  .hint-swipe{display:inline}
+}
+@media(min-width:701px){.lightbox-nav-btn{display:grid}}
+
+/* ============ ДОРОГАЯ АНИМАЦИЯ (22.10.2026) ============ */
+/* 1. Строки первого экрана поднимаются из-под маски, а не проявляются все сразу */
+.hero-copy>h1{opacity:1;transform:none;animation:none}
+.hero h1 .line{display:block;overflow:hidden;padding-bottom:.04em}
+.hero h1 .line>span{display:block;transform:translateY(112%)}
+.hero h1 .accent{color:#7b8274}
+body.is-ready .hero h1 .line>span{animation:line-up 1.05s var(--ease) forwards}
+body.is-ready .hero h1 .line:nth-child(2)>span{animation-delay:.09s}
+body.is-ready .hero h1 .line:nth-child(3)>span{animation-delay:.18s}
+@keyframes line-up{to{transform:none}}
+
+/* 2. Мега-типографика: три строки, одна залита фотографией */
+.mega-block{overflow:hidden;border-top:1px solid var(--gold-line);border-bottom:1px solid var(--gold-line);
+  padding:clamp(26px,3.4vw,52px) 0}
+.mega{display:block;margin:0;font-family:var(--display);font-weight:700;text-transform:uppercase;
+  font-size:clamp(46px,12.5vw,178px);line-height:.86;letter-spacing:-.045em;white-space:nowrap}
+.mega .line{display:block;overflow:hidden;padding-bottom:.02em}
+.mega .line>span{display:block;clip-path:inset(0 0 100% 0);transform:translateY(.1em);
+  transition:clip-path 1.05s var(--ease),transform 1.05s var(--ease)}
+.mega-block.is-on .mega .line>span{clip-path:inset(0);transform:none}
+.mega-block.is-on .mega .line:nth-child(2)>span{transition-delay:.11s}
+.mega-block.is-on .mega .line:nth-child(3)>span{transition-delay:.22s}
+.mega .fill{background:url('/images/hero-2.jpg') center 45%/cover no-repeat;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:1px rgba(201,161,90,.42)}
+.mega .outline{color:transparent;-webkit-text-stroke:1.2px rgba(244,239,230,.42)}
+.mega-meta{display:flex;justify-content:space-between;gap:18px;margin-top:18px;flex-wrap:wrap;
+  font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-soft);opacity:.75}
+.mega-block .mega-meta span b{font-weight:500;color:#f4efe6}
+
+/* 3. Спотлайт на фото мастера: свет идёт за курсором, на телефоне — по прокрутке */
+.master-photo .spot-dim{position:absolute;inset:0;z-index:1;pointer-events:none;background:rgba(8,8,11,.93);
+  --r:clamp(240px,30vw,380px);--x:50%;--y:42%;
+  /* край мягкий: переход 38% → 90%, иначе круг читается как «дырка» */
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 38%,#000 90%);
+  mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 38%,#000 90%)}
+.master-photo .photo-label{z-index:2}
+
+@media(max-width:700px){
+  .mega{font-size:clamp(30px,10.2vw,72px);line-height:.94;letter-spacing:-.05em}
+  .mega-meta{font-size:9.5px;letter-spacing:.14em;gap:8px;margin-top:14px}
+  .master-photo .spot-dim{--r:min(58vw,240px);--y:40%}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero h1 .line>span{transform:none;animation:none!important}
+  .mega .line>span{clip-path:none;transform:none;transition:none}
+  .master-photo .spot-dim{display:none}
+}
+/* Три обещания: убираем «кнопочные» рамки и тёмно-оливковый текст из старой светлой темы */
+.principles span{background:none;border:0;box-shadow:none;color:#b9b09f}
+.principles strong{color:#f4efe6;font-weight:500}
+.principles svg{color:var(--brass-soft)}

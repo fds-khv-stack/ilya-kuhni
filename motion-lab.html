@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<title>Motion Lab — приёмы «дорогой» анимации</title>
+<style>
+  :root{
+    --ink:#0e0e12; --ink-2:#15151b; --brass:#c9a15a; --brass-soft:#e0c68d;
+    --paper:#f4efe6; --muted:#96968f; --line:rgba(201,161,90,.22);
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--ink);color:var(--paper);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:64px 24px 96px}
+  .kicker{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--brass);margin:0 0 14px}
+  h1{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(30px,4.4vw,52px);
+    line-height:1.04;letter-spacing:-.02em;margin:0 0 18px}
+  .lead{max-width:56ch;color:#cfc9be;font-size:15px;line-height:1.7;margin:0 0 12px}
+  .rule{height:1px;background:var(--line);margin:44px 0}
+  .chapter{display:flex;align-items:baseline;gap:14px;margin:0 0 8px}
+  .num{font-size:11px;color:var(--brass);letter-spacing:.2em}
+  h2.ch{font-family:'Playfair Display',Georgia,serif;font-weight:400;font-size:clamp(22px,2.6vw,32px);margin:0}
+  .note{font-size:12.5px;color:var(--muted);line-height:1.65;max-width:62ch;margin:10px 0 22px}
+  .note b{color:var(--brass-soft);font-weight:500}
+
+  /* ---------- 1. FLIP: сетка → дуга ---------- */
+  .flipbar{display:flex;gap:12px;align-items:center;margin:0 0 16px;flex-wrap:wrap}
+  button.tg{appearance:none;border:1px solid var(--line);background:transparent;color:var(--paper);
+    font:inherit;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding:12px 18px;
+    min-height:44px;border-radius:2px;cursor:pointer;transition:background .35s var(--ease),color .35s var(--ease),border-color .35s var(--ease)}
+  button.tg:hover{background:var(--brass);color:#14100a;border-color:var(--brass)}
+  .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .stage{position:relative;height:600px;border:1px solid var(--line);border-radius:3px;
+    background:radial-gradient(120% 90% at 50% 0%,#1b1b22 0%,#0e0e12 62%);overflow:hidden}
+  .tile{position:absolute;top:0;left:0;width:130px;height:160px;border-radius:3px;overflow:hidden;
+    box-shadow:0 18px 40px rgba(0,0,0,.45);will-change:transform;cursor:pointer}
+  .tile img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.02) brightness(.94)}
+  .tile:after{content:'';position:absolute;inset:0;border:1px solid rgba(244,239,230,.10);border-radius:3px}
+  .stage-cap{position:absolute;left:18px;bottom:14px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass-soft);opacity:.8}
+
+  /* ---------- 2. Огромная типографика ---------- */
+  .mega{position:relative;margin:0;padding:0;overflow:hidden}
+  .mega .l{display:block;font-family:'Playfair Display',Georgia,serif;font-weight:700;
+    font-size:clamp(58px,15.5vw,190px);line-height:.84;letter-spacing:-.045em;text-transform:uppercase;
+    clip-path:inset(0 0 100% 0);transform:translateY(.12em);
+    transition:clip-path 1.05s var(--ease),transform 1.05s var(--ease)}
+  .mega.in .l{clip-path:inset(0 0 0 0);transform:none}
+  .mega.in .l:nth-child(2){transition-delay:.12s}
+  .mega .l.fill{background:url('public/images/hero-2.jpg') center 42%/cover no-repeat;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    -webkit-text-stroke:1px rgba(201,161,90,.35)}
+  .mega .l.out{-webkit-text-stroke:1.2px rgba(244,239,230,.5);color:transparent}
+  .mega-meta{display:flex;justify-content:space-between;gap:18px;margin-top:14px;
+    font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .mega-meta b{color:var(--brass-soft);font-weight:500}
+
+  /* ---------- 3. Спотлайт-раскрытие ---------- */
+  .spot{position:relative;height:420px;border-radius:3px;overflow:hidden;border:1px solid var(--line);
+    background:#0a0a0d;cursor:crosshair}
+  .spot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .spot .dim{position:absolute;inset:0;background:#08080b;
+    -webkit-mask-image:radial-gradient(circle var(--r,190px) at var(--x,50%) var(--y,50%),transparent 0%,transparent 55%,#000 72%);
+    mask-image:radial-gradient(circle var(--r,190px) at var(--x,50%) var(--y,50%),transparent 0%,transparent 55%,#000 72%);
+    transition:opacity .4s var(--ease)}
+  .spot .cap{position:absolute;left:18px;bottom:16px;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--brass-soft)}
+
+  /* ---------- 4. Микро-хром ---------- */
+  .ticks{display:flex;gap:26px;flex-wrap:wrap;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .ticks span b{color:var(--brass-soft);font-weight:500}
+  footer{margin-top:56px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#6f6f68}
+  @media(max-width:640px){
+    .stage{height:460px}
+    .tile{width:96px;height:118px}
+    .spot{height:320px}
+    .wrap{padding:40px 18px 72px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .mega .l{clip-path:none;transform:none;transition:none}
+    .tile{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Motion Lab · приёмы из референса marina_uiux</p>
+  <h1>Четыре приёма, из которых складывается «дорогая» анимация</h1>
+  <p class="lead">Разобрал рил: там не «много эффектов», а три жёстких правила — огромный объект, типографика в два порядка по размеру и движение, которое связано с жестом или прокруткой, а не запускается само. Ниже каждый приём живой, на фотографиях мастерской.</p>
+
+  <div class="rule"></div>
+
+  <div class="chapter"><span class="num">01</span><h2 class="ch">Морф раскладки: сетка → дуга</h2></div>
+  <p class="note">Главный трюк рила: карточки <b>не исчезают и не появляются заново</b>, а переезжают из сетки в дугу, каждая со своим стаггером 24–30 мс. Пружинка и stagger — единственное, что делает это дорогим: длительность ~0.8 с, кривая <b>cubic-bezier(.22,1,.36,1)</b>, никакого bounce.</p>
+  <div class="flipbar">
+    <button class="tg" id="tg">Разложить по дуге</button>
+    <span class="hint" id="stateCap">12 работ · сетка</span>
+  </div>
+  <div class="stage" id="stage">
+    <div class="stage-cap">Мастерская · Хабаровск</div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="chapter"><span class="num">02</span><h2 class="ch">Типографика в два порядка</h2></div>
+  <p class="note">190 px на телефоне против 10 px подписи в углу. Строки раскрываются маской снизу (<b>clip-path: inset</b>) с задержкой 120 мс, буквы не «печатаются» и не скачут. Одна строка залита фотографией через <b>background-clip: text</b> — предмет читается внутри букв.</p>
+  <div class="mega" id="mega">
+    <span class="l">Кухни</span>
+    <span class="l fill">и мебель</span>
+    <span class="l out">на заказ</span>
+  </div>
+  <div class="mega-meta"><span><b>Илья кухни</b> · Хабаровск</span><span>прокрутите — строки раскроются</span></div>
+
+  <div class="rule"></div>
+
+  <div class="chapter"><span class="num">03</span><h2 class="ch">Спотлайт: тьма, которую раздвигает курсор</h2></div>
+  <p class="note">В реле предмет выходит из темноты — это и есть «дорого». Здесь то же самое делает <b>mask-image</b> с радиальным градиентом, который следует за указателем; на телефоне центр маски медленно едет по прокрутке. Свет мягкий: переход 55% → 72%.</p>
+  <div class="spot" id="spot">
+    <img src="public/images/hero-4.jpg" alt="Кухня мастерской Ильи">
+    <div class="dim" id="dim"></div>
+    <div class="cap">Наведите курсор · на телефоне — прокрутка</div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="chapter"><span class="num">04</span><h2 class="ch">Микро-хром: то, что делает кадр «сделанным»</h2></div>
+  <p class="note">Тонкая линия, счётчик с ведущим нулём, подписи в 10 px с трекингом .2em по краям, номер раздела. Эти элементы не анимируются вообще — и именно поэтому анимация рядом выглядит дорого.</p>
+  <div class="ticks">
+    <span>01 — <b>Геометрия</b></span>
+    <span>02 — <b>Материал</b></span>
+    <span>03 — <b>Свет</b></span>
+    <span>04 — <b>Тишина</b></span>
+  </div>
+
+  <footer>Motion Lab · прототип приёмов, не часть сайта</footer>
+</div>
+
+<script>
+(function(){
+  /* ---------- 01. FLIP: сетка ↔ дуга ---------- */
+  const stage = document.getElementById('stage');
+  const tg = document.getElementById('tg');
+  const cap = document.getElementById('stateCap');
+  const shots = [
+    'public/gallery/kuhni/p1.jpg','public/gallery/kuhni/p4.jpg','public/gallery/kuhni/p8.jpg',
+    'public/gallery/kuhni/p12.jpg','public/gallery/kuhni/p16.jpg','public/gallery/kuhni/p20.jpg',
+    'public/gallery/shkafy/p2.jpg','public/gallery/shkafy/p6.jpg','public/gallery/tumby/p3.jpg',
+    'public/gallery/vannaya/p2.jpg','public/gallery/prihozhie/p3.jpg','public/gallery/stoly/p2.jpg'
+  ];
+  const tiles = [];
+  for (let i = 0; i < 12; i++) {
+    const d = document.createElement('div');
+    d.className = 'tile';
+    const img = document.createElement('img');
+    img.src = shots[i]; img.alt = ''; img.loading = 'lazy';
+    img.onerror = function(){ this.style.display = 'none'; this.parentNode.style.background = 'linear-gradient(150deg,#2a2118,#15151b)'; };
+    d.appendChild(img);
+    stage.appendChild(d);
+    tiles.push(d);
+  }
+
+  function layout(kind){
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const tw = tiles[0].offsetWidth, th = tiles[0].offsetHeight;
+    const out = [];
+    if (kind === 'grid') {
+      const cols = 4, rows = 3, gap = 14;
+      const totalW = cols * tw + (cols - 1) * gap;
+      const totalH = rows * th + (rows - 1) * gap;
+      const x0 = (W - totalW) / 2, y0 = (H - totalH) / 2;
+      for (let i = 0; i < tiles.length; i++) {
+        const c = i % cols, r = Math.floor(i / cols);
+        out.push({ x: x0 + c * (tw + gap), y: y0 + r * (th + gap), rot: 0 });
+      }
+    } else {
+      const R = Math.min(W * 0.40, H * 0.46);
+      const cx = W / 2, cy = H / 2;
+      for (let i = 0; i < tiles.length; i++) {
+        const a = (i / tiles.length) * Math.PI * 2 - Math.PI / 2;
+        out.push({
+          x: cx + Math.cos(a) * R - tw / 2,
+          y: cy + Math.sin(a) * R * 0.92 - th / 2,
+          rot: Math.sin(a) * 16
+        });
+      }
+    }
+    return out;
+  }
+
+  let mode = 'grid';
+  let current = layout('grid');
+  function paint(target, animate){
+    tiles.forEach(function(t, i){
+      const to = 'translate3d(' + target[i].x + 'px,' + target[i].y + 'px,0) rotate(' + target[i].rot + 'deg)';
+      if (animate) {
+        t.animate(
+          [{ transform: t.style.transform || 'none' }, { transform: to }],
+          { duration: 820, delay: i * 26, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' }
+        ).onfinish = function(){ t.style.transform = to; };
+      } else {
+        t.style.transform = to;
+      }
+    });
+    current = target;
+  }
+  paint(current, false);
+
+  tg.addEventListener('click', function(){
+    mode = mode === 'grid' ? 'arc' : 'grid';
+    paint(layout(mode), true);
+    tg.textContent = mode === 'grid' ? 'Разложить по дуге' : 'Вернуть в сетку';
+    cap.textContent = '12 работ · ' + (mode === 'grid' ? 'сетка' : 'дуга');
+  });
+
+  window.addEventListener('resize', function(){
+    paint(layout(mode), false);
+  });
+
+  /* ---------- 02. Маска строк по появлению ---------- */
+  const mega = document.getElementById('mega');
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) { mega.classList.add('in'); io.unobserve(mega); }
+    });
+  }, { threshold: 0.35 });
+  io.observe(mega);
+
+  /* ---------- 03. Спотлайт ---------- */
+  const spot = document.getElementById('spot');
+  const dim = document.getElementById('dim');
+  spot.addEventListener('pointermove', function(e){
+    const r = spot.getBoundingClientRect();
+    dim.style.setProperty('--x', (e.clientX - r.left) + 'px');
+    dim.style.setProperty('--y', (e.clientY - r.top) + 'px');
+  });
+  spot.addEventListener('pointerleave', function(){
+    dim.style.setProperty('--x', '50%');
+    dim.style.setProperty('--y', '50%');
+  });
+  // на телефоне маска едет по прокрутке
+  addEventListener('scroll', function(){
+    if (matchMedia('(hover:none)').matches) {
+      const r = spot.getBoundingClientRect();
+      const p = 1 - Math.min(1, Math.max(0, r.top / innerHeight));
+      dim.style.setProperty('--y', (20 + p * 60) + '%');
+      dim.style.setProperty('--x', '50%');
+    }
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

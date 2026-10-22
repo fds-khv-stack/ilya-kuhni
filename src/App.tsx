@@ -71,6 +71,7 @@ function SectionModal({ section, onClose }: { section: GallerySection; onClose: 
   const [photo, setPhoto] = useState<number | null>(null);
   const photoTrigger = useRef<HTMLButtonElement | null>(null);
   const back = useRef<HTMLButtonElement>(null);
+  const swipe = useRef<{ x: number; y: number } | null>(null);
   const viewingPhoto = photo !== null;
   useEffect(() => {
     if (viewingPhoto) back.current?.focus();
@@ -89,7 +90,12 @@ function SectionModal({ section, onClose }: { section: GallerySection; onClose: 
       </div>
       {photo !== null && <div className="photo-viewer">
         <button ref={back} className="text-link photo-back" onClick={() => setPhoto(null)}>← Все фотографии</button>
-        <Pic src={section.photos[photo]} alt={`${section.title} — фото ${photo + 1}`} light={false} loading="eager" />
+        <div className="photo-swipe" onPointerDown={e => { if (e.pointerType !== 'mouse') swipe.current = { x: e.clientX, y: e.clientY }; }} onPointerCancel={() => { swipe.current = null; }} onPointerUp={e => {
+          const start = swipe.current; swipe.current = null;
+          if (!start) return;
+          const dx = e.clientX - start.x, dy = e.clientY - start.y;
+          if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) setPhoto((photo + (dx < 0 ? 1 : -1) + n) % n);
+        }}><Pic src={section.photos[photo]} alt={`${section.title} — фото ${photo + 1}`} light={false} loading="eager" /></div>
         <div className="photo-controls"><button className="icon-button" aria-label="Предыдущее фото" onClick={() => setPhoto((photo - 1 + n) % n)}>←</button><span role="status">{photo + 1} / {n}</span><button className="icon-button" aria-label="Следующее фото" onClick={() => setPhoto((photo + 1) % n)}>→</button></div>
       </div>}
       <div className="gallery-contact"><p>Нравится это направление?<br /><span>Обсудите размеры, материалы и вашу идею с Ильёй.</span></p><a className="button button-primary" href={CONTACT.href}><Icon name="phone" size={18} />Позвонить мастеру</a></div>
@@ -98,6 +104,65 @@ function SectionModal({ section, onClose }: { section: GallerySection; onClose: 
 }
 export default function App() {
   const [menu, setMenu] = useState(false);
+  const [megaOn, setMegaOn] = useState(false);
+
+  // Переходы по якорям делаем сами: нативный прыжок по #hash на мобильных терялся
+  // (меню закрывалось, страница оставалась на месте), плюс нужен отступ под липкую шапку.
+  useEffect(() => {
+    const onClick = (event: globalThis.MouseEvent) => {
+      const link = (event.target as HTMLElement | null)?.closest?.('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!link) return;
+      const id = link.getAttribute('href');
+      if (!id || id.length < 2) return;
+      const target = document.querySelector(id);
+      if (!target) return;
+      event.preventDefault();
+      setMenu(false);
+      target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+      history.replaceState(null, '', id);
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
+
+  // Мега-типографика раскрывается при появлении. Класс держим в состоянии:
+  // прямой classList React снимает при следующей перерисовке (после заставки)
+  useEffect(() => {
+    const mega = document.querySelector('.mega-block');
+    if (!mega) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { setMegaOn(true); io.unobserve(mega); }
+      });
+    }, { threshold: 0.3 });
+    io.observe(mega);
+    return () => io.disconnect();
+  }, []);
+
+  // Фото мастера «выходит из темноты»: свет идёт за курсором, на телефоне — по прокрутке
+  useEffect(() => {
+    const photo = document.querySelector<HTMLElement>('.master-photo');
+    const dim = photo?.querySelector<HTMLElement>('.spot-dim');
+    if (!photo || !dim) return;
+    const onMove = (event: PointerEvent) => {
+      const r = photo.getBoundingClientRect();
+      dim.style.setProperty('--x', `${event.clientX - r.left}px`);
+      dim.style.setProperty('--y', `${event.clientY - r.top}px`);
+    };
+    const onScroll = () => {
+      const r = photo.getBoundingClientRect();
+      const p = 1 - Math.min(1, Math.max(0, r.top / window.innerHeight));
+      dim.style.setProperty('--x', '50%');
+      dim.style.setProperty('--y', `${22 + p * 52}%`);
+    };
+    if (window.matchMedia('(hover: none)').matches) {
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      return () => window.removeEventListener('scroll', onScroll);
+    }
+    photo.addEventListener('pointermove', onMove);
+    return () => photo.removeEventListener('pointermove', onMove);
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const [heroSlide, setHeroSlide] = useState(0);
   const [gallery, setGallery] = useState<GallerySection | null>(null);
@@ -161,7 +226,8 @@ export default function App() {
         <div className="section-heading"><div><div className="eyebrow">Работы мастерской</div><h2 data-reveal>Посмотрите,<br /><span className="mark">что мы сделали.</span></h2></div><p data-reveal>Работы мастерской по семи направлениям. Откройте раздел и рассмотрите детали.</p></div>
         <div className="cat-grid">{sections.map((section, i) => <CatCard key={section.slug} section={section} delayMs={(i % 4) * 90} onOpen={() => setGallery(section)} />)}</div>
       </section>
-      <section id="master" className="master-section" data-reveal><div className="container master-grid"><div className="master-photo"><Pic className="img-reveal" src="/gallery/kuhni/p5.jpg" alt="Мебель на заказ в Хабаровске — работа мастерской «Илья кухни»" /><span className="photo-label">За каждой деталью — человек</span></div><div className="master-copy"><div className="eyebrow">Давайте познакомимся</div><h2 data-reveal>Меня зовут Илья.<br />И я отвечаю<br />за свою работу.</h2><p className="master-intro">«Хорошая мебель не просит внимания.<br />Она просто делает вашу жизнь удобнее».</p><p>Я создаю кухни и мебель под конкретного человека. Сначала слушаю: как вы готовите, что любите, где храните любимые чашки. И только потом предлагаю решения.</p><p>Для меня важны не только фасады на фотографии, но и то, как открывается каждый ящик. Поэтому я лично веду проект — от первого разговора до последней регулировки.</p><div className="master-signoff"><span className="signature">Илья</span><span>Ваш мастер.<br />На каждом этапе.</span></div><a className="text-link" href="#process">Как будет устроена наша работа<Icon name="arrow" size={18} /></a></div></div></section>
+      <section className={megaOn ? 'mega-block is-on' : 'mega-block'} aria-label="О мастерской"><div className="container"><h2 className="mega"><span className="line"><span>Мебель</span></span><span className="line"><span className="fill">с характером</span></span><span className="line"><span className="outline">один мастер</span></span></h2><div className="mega-meta"><span><b>Илья кухни</b> · частная мастерская</span><span>Хабаровск и пригороды</span><span>от эскиза до установки</span></div></div></section>
+      <section id="master" className="master-section" data-reveal><div className="container master-grid"><div className="master-photo"><Pic className="img-reveal" src="/gallery/kuhni/p5.jpg" alt="Мебель на заказ в Хабаровске — работа мастерской «Илья кухни»" /><span className="spot-dim" aria-hidden="true" /><span className="photo-label">За каждой деталью — человек</span></div><div className="master-copy"><div className="eyebrow">Давайте познакомимся</div><h2 data-reveal>Меня зовут Илья.<br />И я отвечаю<br />за свою работу.</h2><p className="master-intro">«Хорошая мебель не просит внимания.<br />Она просто делает вашу жизнь удобнее».</p><p>Я создаю кухни и мебель под конкретного человека. Сначала слушаю: как вы готовите, что любите, где храните любимые чашки. И только потом предлагаю решения.</p><p>Для меня важны не только фасады на фотографии, но и то, как открывается каждый ящик. Поэтому я лично веду проект — от первого разговора до последней регулировки.</p><div className="master-signoff"><span className="signature">Илья</span><span>Ваш мастер.<br />На каждом этапе.</span></div><a className="text-link" href="#process">Как будет устроена наша работа<Icon name="arrow" size={18} /></a></div></div></section>
       <section id="services" className="section container services" data-reveal><div className="section-heading"><div><div className="eyebrow">Направления</div><h2 data-reveal>Больше, чем кухни.</h2></div><p>Мебель, которая вписывается в пространство.<br />И в вашу жизнь.</p></div><div className="service-grid">{services.map((item, i) => <button key={item.title} className="service-card" data-reveal style={delay((i % 3) * 90)} onClick={() => openContact(item.value)}><Pic className="img-reveal" src={item.image} alt={'Мебель на заказ: ' + item.title} /><div className="service-shade" /><div className="service-copy"><div><h3>{item.title}</h3><p>{item.description}</p></div><span className="circle-arrow"><Icon name="diagonal" /></span></div></button>)}</div></section>
       <section id="process" className="process-section section" data-reveal><div className="container"><div className="section-heading"><div><div className="eyebrow">Понятно. Спокойно. По шагам.</div><h2 data-reveal><span className="lead-strong">От первого «здравствуйте»<br />до вашей новой кухни.</span></h2></div><p>Без сложных схем и лишних посредников.<br />На каждом этапе вы общаетесь со мной.</p></div><div className="process-grid">{[{ title: 'Знакомимся', label: 'Заявка', text: 'Обсуждаем вашу идею, привычки и пожелания. Определяем ориентиры по бюджету.' }, { title: 'Продумываем', label: 'Замер', text: 'Изучаем пространство. Вместе выбираем материалы, планировку и каждую деталь.' }, { title: 'Создаём', label: 'Производство', text: 'Изготавливаем мебель по согласованному проекту. Держим вас в курсе процесса.' }, { title: 'Устанавливаем', label: 'Монтаж', text: 'Бережно привозим, собираем и регулируем. Проверяем, чтобы всё работало как надо.' }, { title: 'Остаёмся рядом', label: 'Гарантия', text: 'Не прощаемся после установки. Условия гарантии фиксируем в договоре.' }].map((item, index) => <div className="step" key={item.label} data-reveal style={delay((index % 5) * 90)}><div className="step-top"><span>0{index + 1}</span><small>{item.label}</small></div><h3>{item.title}</h3><p>{item.text}</p></div>)}</div></div></section>
       <section className="faq-section container" data-reveal><div><div className="eyebrow">Перед разговором</div><h2 data-reveal>До первого<br />разговора.</h2></div><div className="faq-list">{[{ q: 'Сколько стоит кухня на заказ?', a: 'Стоимость зависит от размеров, материалов фасадов, столешницы и фурнитуры. Начнём с вашей задачи и комфортного бюджета — после замера и выбора комплектации подготовим индивидуальный расчёт.' }, { q: 'Можно прийти со своим дизайн-проектом?', a: 'Конечно. Можно прислать готовый проект, план квартиры или просто фотографии, которые вам нравятся. Обсудим, как воплотить идею и сделать мебель удобной именно для вас.' }, { q: 'Какие сроки изготовления?', a: 'Срок зависит от объёма проекта и доступности материалов. Точную дату согласуем до начала работ и зафиксируем в договоре. Если у вас есть важная дата, расскажите о ней при первом разговоре.' }, { q: 'Работаете только в Хабаровске?', a: 'Основное направление — Хабаровск и пригород. Если ваш объект находится дальше, расскажите о нём по телефону: возможность замера, доставки и монтажа обсудим индивидуально.' }].map(item => <details key={item.q}><summary>{item.q}<Icon name="plus" size={20} /></summary><p>{item.a}</p></details>)}</div></section>
