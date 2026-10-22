@@ -290,3 +290,51 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 
   .hint-swipe{display:inline}
 }
 @media(min-width:701px){.lightbox-nav-btn{display:grid}}
+
+/* ============ ДОРОГАЯ АНИМАЦИЯ (22.10.2026) ============ */
+/* 1. Строки первого экрана поднимаются из-под маски, а не проявляются все сразу */
+.hero-copy>h1{opacity:1;transform:none;animation:none}
+.hero h1 .line{display:block;overflow:hidden;padding-bottom:.04em}
+.hero h1 .line>span{display:block;transform:translateY(112%)}
+.hero h1 .accent{color:#7b8274}
+body.is-ready .hero h1 .line>span{animation:line-up 1.05s var(--ease) forwards}
+body.is-ready .hero h1 .line:nth-child(2)>span{animation-delay:.09s}
+body.is-ready .hero h1 .line:nth-child(3)>span{animation-delay:.18s}
+@keyframes line-up{to{transform:none}}
+
+/* 2. Мега-типографика: три строки, одна залита фотографией */
+.mega-block{overflow:hidden;border-top:1px solid var(--gold-line);border-bottom:1px solid var(--gold-line);
+  padding:clamp(26px,3.4vw,52px) 0}
+.mega{display:block;margin:0;font-family:var(--display);font-weight:700;text-transform:uppercase;
+  font-size:clamp(46px,12.5vw,178px);line-height:.86;letter-spacing:-.045em;white-space:nowrap}
+.mega .line{display:block;overflow:hidden;padding-bottom:.02em}
+.mega .line>span{display:block;clip-path:inset(0 0 100% 0);transform:translateY(.1em);
+  transition:clip-path 1.05s var(--ease),transform 1.05s var(--ease)}
+.mega-block.is-on .mega .line>span{clip-path:inset(0);transform:none}
+.mega-block.is-on .mega .line:nth-child(2)>span{transition-delay:.11s}
+.mega-block.is-on .mega .line:nth-child(3)>span{transition-delay:.22s}
+.mega .fill{background:url('/images/hero-2.jpg') center 45%/cover no-repeat;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:1px rgba(201,161,90,.42)}
+.mega .outline{color:transparent;-webkit-text-stroke:1.2px rgba(244,239,230,.42)}
+.mega-meta{display:flex;justify-content:space-between;gap:18px;margin-top:18px;flex-wrap:wrap;
+  font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-soft);opacity:.75}
+.mega-block .mega-meta span b{font-weight:500;color:#f4efe6}
+
+/* 3. Спотлайт на фото мастера: свет идёт за курсором, на телефоне — по прокрутке */
+.master-photo .spot-dim{position:absolute;inset:0;z-index:1;pointer-events:none;background:#08080b;
+  --r:clamp(200px,26vw,320px);--x:50%;--y:42%;
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 56%,#000 78%);
+  mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 56%,#000 78%)}
+.master-photo .photo-label{z-index:2}
+
+@media(max-width:700px){
+  .mega{font-size:clamp(30px,10.2vw,72px);line-height:.94;letter-spacing:-.05em}
+  .mega-meta{font-size:9.5px;letter-spacing:.14em;gap:8px;margin-top:14px}
+  .master-photo .spot-dim{--r:min(58vw,240px);--y:40%}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero h1 .line>span{transform:none;animation:none!important}
+  .mega .line>span{clip-path:none;transform:none;transition:none}
+  .master-photo .spot-dim{display:none}
+}

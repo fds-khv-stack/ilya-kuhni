@@ -207,6 +207,43 @@ export default function App() {
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
   }, []);
+
+  // Мега-типографика раскрывается при появлении; фото мастера «выходит из темноты» под курсором
+  useEffect(() => {
+    const mega = document.querySelector('.mega-block');
+    let io: IntersectionObserver | undefined;
+    if (mega) {
+      io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) { mega.classList.add('is-on'); io?.unobserve(mega); }
+        });
+      }, { threshold: 0.3 });
+      io.observe(mega);
+    }
+    const photo = document.querySelector<HTMLElement>('.master-photo');
+    const dim = photo?.querySelector<HTMLElement>('.spot-dim');
+    const onMove = (event: PointerEvent) => {
+      if (!photo || !dim) return;
+      const r = photo.getBoundingClientRect();
+      dim.style.setProperty('--x', `${event.clientX - r.left}px`);
+      dim.style.setProperty('--y', `${event.clientY - r.top}px`);
+    };
+    const onScroll = () => {
+      if (!photo || !dim) return;
+      const r = photo.getBoundingClientRect();
+      const p = 1 - Math.min(1, Math.max(0, r.top / window.innerHeight));
+      dim.style.setProperty('--x', '50%');
+      dim.style.setProperty('--y', `${22 + p * 52}%`);
+    };
+    const touch = window.matchMedia('(hover: none)').matches;
+    if (photo && dim && touch) { onScroll(); window.addEventListener('scroll', onScroll, { passive: true }); }
+    else if (photo) photo.addEventListener('pointermove', onMove);
+    return () => {
+      io?.disconnect();
+      photo?.removeEventListener('pointermove', onMove);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const [intro, setIntro] = useState(true);
   const [heroSlide, setHeroSlide] = useState(0);
@@ -230,7 +267,11 @@ export default function App() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  useEffect(() => { const t = window.setTimeout(() => setIntro(false), 2100); return () => window.clearTimeout(t); }, []);
+  useEffect(() => {
+    // заставка уходит — только после этого запускаем подъём строк первого экрана
+    const t = window.setTimeout(() => { setIntro(false); document.body.classList.add('is-ready'); }, 2100);
+    return () => window.clearTimeout(t);
+  }, []);
   useEffect(() => {
     // .img-reveal-картинки обрезаны clip-path:inset(0 0 100% 0), и Chrome считает
     // площадь пересечения нулевой — observer такую картинку «не видит». Поэтому
@@ -275,17 +316,18 @@ ${description || 'Детали хотел(а) бы обсудить лично.'
     <header className={`header ${scrolled ? 'is-scrolled' : ''}`} id="home"><div className="header-inner"><Brand /><nav className="desktop-nav" aria-label="Основная навигация"><a href="#portfolio">Наши работы</a><a href="#master">О мастере</a><a href="#services">Что создаём</a><a href="#process">Как работаем</a></nav><button className="header-cta" onClick={scrollToContact}>Обсудить проект <Icon name="diagonal" size={17} /></button><button className="mobile-menu-button icon-button" onClick={() => setMenu(!menu)} aria-label={menu ? 'Закрыть меню' : 'Открыть меню'} aria-expanded={menu}><Icon name={menu ? 'close' : 'menu'} /></button></div>{menu && <nav className="mobile-nav" aria-label="Мобильная навигация">{[['#portfolio', 'Наши работы'], ['#master', 'О мастере'], ['#services', 'Что создаём'], ['#process', 'Как работаем'], ['#contact', 'Контакты']].map(([href, text]) => <a key={href} href={href} onClick={() => setMenu(false)}>{text}<Icon name="diagonal" size={18} /></a>)}</nav>}</header>
     <main>
       <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-copy"><div className="location"><span className="status-dot" />Частная мастерская · Хабаровск</div><h1 id="hero-title">Авторские кухни<br className="desktop-break" /> и мебель на заказ<br className="desktop-break" /> <span>в Хабаровске</span></h1><p className="hero-subtitle">От идеи до установки.<br />Лично от мастера.</p><button className="button button-primary" onClick={scrollToContact}>Обсудить проект<Icon name="diagonal" size={19} /></button><p className="hero-note">Начнём с разговора, а не с договора.</p><div className="hero-bottom"><span className="mini-mark"><Icon name="hand" size={24} /></span><p>Не конвейер. Не типовые решения.<br /><strong>Мебель с вашим характером.</strong></p></div></div>
+        <div className="hero-copy"><div className="location"><span className="status-dot" />Частная мастерская · Хабаровск</div><h1 id="hero-title"><span className="line"><span>Авторские кухни</span></span><span className="line"><span>и мебель на заказ</span></span><span className="line"><span className="accent">в Хабаровске</span></span></h1><p className="hero-subtitle">От идеи до установки.<br />Лично от мастера.</p><button className="button button-primary" onClick={scrollToContact}>Обсудить проект<Icon name="diagonal" size={19} /></button><p className="hero-note">Начнём с разговора, а не с договора.</p><div className="hero-bottom"><span className="mini-mark"><Icon name="hand" size={24} /></span><p>Не конвейер. Не типовые решения.<br /><strong>Мебель с вашим характером.</strong></p></div></div>
         <div className="hero-media">{HERO_IMAGES.map((src, i) => <div key={src} className={`hero-slide ${i === heroSlide ? 'is-on' : ''}`} aria-hidden={i !== heroSlide}><Pic src={src} alt={`Мебель на заказ в Хабаровске — работа мастерской, вид ${i + 1}`} light={false} loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} /></div>)}<div className="image-top-note"><span />Продумано до последней детали</div><div className="hero-progress"><i key={heroSlide} /></div><button className="image-pagination" onClick={() => setHeroSlide(s => (s + 1) % HERO_IMAGES.length)} aria-label={`Следующий интерьер. Сейчас ${heroSlide + 1} из ${HERO_IMAGES.length}`}><b>0{heroSlide + 1}</b><span />0{HERO_IMAGES.length}</button></div>
         
       </section>
+      <section className="mega-block" aria-label="О мастерской"><div className="container"><h2 className="mega"><span className="line"><span>Мебель</span></span><span className="line"><span className="fill">с характером</span></span><span className="line"><span className="outline">один мастер</span></span></h2><div className="mega-meta"><span><b>Илья кухни</b> · частная мастерская</span><span>Хабаровск и пригороды</span><span>от эскиза до установки</span></div></div></section>
       <div className="principles container"><div data-reveal style={delay(0)}><Icon name="ruler" size={26} /><span>По вашим размерам.<br /><strong>Под ваш образ жизни.</strong></span></div><div data-reveal style={delay(90)}><Icon name="leaf" size={26} /><span>Материалы, к которым<br /><strong>приятно прикоснуться.</strong></span></div><div data-reveal style={delay(180)}><Icon name="hand" size={26} /><span>Один мастер.<br /><strong>Личная ответственность.</strong></span></div></div>
       <div className="marquee"><div className="marquee-track">{marqueeItems.map(item => <span key={`${item.dup}-${item.slug}`} aria-hidden={item.dup === 1 || undefined}>{item.title}<b> ·</b></span>)}<span aria-hidden="true" /></div></div>
       <section id="portfolio" className="portfolio section container" data-reveal>
         <div className="section-heading"><div><div className="eyebrow">Каждая деталь имеет значение</div><h2 data-reveal>НЕ просто мебель,<br />а часть <span className="mark">ВАШЕЙ</span> жизни</h2></div><p data-reveal>Семь направлений и настоящие работы мастерской.<br className="desktop-break" /> Один подход — создавать как для себя.</p></div>
         <div className="cat-grid">{sections.map((section, i) => <CatCard key={section.slug} section={section} delayMs={(i % 4) * 90} onOpen={() => setGallery(section)} />)}</div>
       </section>
-      <section id="master" className="master-section" data-reveal><div className="container master-grid"><div className="master-photo"><Pic className="img-reveal" src="/gallery/kuhni/p5.jpg" alt="Мебель на заказ в Хабаровске — работа мастерской «Илья кухни»" /><span className="photo-label">За каждой деталью — человек</span></div><div className="master-copy"><div className="eyebrow">Давайте познакомимся</div><h2 data-reveal>Меня зовут Илья.<br />И я отвечаю<br />за свою работу.</h2><p className="master-intro">«Хорошая мебель не просит внимания.<br />Она просто делает вашу жизнь удобнее».</p><p>Я создаю кухни и мебель под конкретного человека. Сначала слушаю: как вы готовите, что любите, где храните любимые чашки. И только потом предлагаю решения.</p><p>Для меня важны не только фасады на фотографии, но и то, как открывается каждый ящик. Поэтому я лично веду проект — от первого разговора до последней регулировки.</p><div className="master-signoff"><span className="signature">Илья</span><span>Ваш мастер.<br />На каждом этапе.</span></div><a className="text-link" href="#process">Как будет устроена наша работа<Icon name="arrow" size={18} /></a></div></div></section>
+      <section id="master" className="master-section" data-reveal><div className="container master-grid"><div className="master-photo"><Pic className="img-reveal" src="/gallery/kuhni/p5.jpg" alt="Мебель на заказ в Хабаровске — работа мастерской «Илья кухни»" /><span className="spot-dim" aria-hidden="true" /><span className="photo-label">За каждой деталью — человек</span></div><div className="master-copy"><div className="eyebrow">Давайте познакомимся</div><h2 data-reveal>Меня зовут Илья.<br />И я отвечаю<br />за свою работу.</h2><p className="master-intro">«Хорошая мебель не просит внимания.<br />Она просто делает вашу жизнь удобнее».</p><p>Я создаю кухни и мебель под конкретного человека. Сначала слушаю: как вы готовите, что любите, где храните любимые чашки. И только потом предлагаю решения.</p><p>Для меня важны не только фасады на фотографии, но и то, как открывается каждый ящик. Поэтому я лично веду проект — от первого разговора до последней регулировки.</p><div className="master-signoff"><span className="signature">Илья</span><span>Ваш мастер.<br />На каждом этапе.</span></div><a className="text-link" href="#process">Как будет устроена наша работа<Icon name="arrow" size={18} /></a></div></div></section>
       <section id="services" className="section container services" data-reveal><div className="section-heading"><div><div className="eyebrow">В едином стиле с вашим домом</div><h2 data-reveal>Больше, чем кухни.</h2></div><p>Мебель, которая вписывается в пространство.<br />И в вашу жизнь.</p></div><div className="service-grid">{services.map((item, i) => <button key={item.title} className="service-card" data-reveal style={delay((i % 3) * 90)} onClick={() => openContact('Telegram', item.value)}><Pic className="img-reveal" src={item.image} alt={'Мебель на заказ: ' + item.title} /><div className="service-shade" /><div className="service-copy"><div><h3>{item.title}</h3><p>{item.description}</p></div><span className="circle-arrow"><Icon name="diagonal" /></span></div></button>)}</div></section>
       <section id="process" className="process-section section" data-reveal><div className="container"><div className="section-heading"><div><div className="eyebrow">Понятно. Спокойно. По шагам.</div><h2 data-reveal><span className="lead-strong">От первого «здравствуйте»<br />до вашей новой кухни.</span></h2></div><p>Без сложных схем и лишних посредников.<br />На каждом этапе вы общаетесь со мной.</p></div><div className="process-grid">{[{ title: 'Знакомимся', label: 'Заявка', text: 'Обсуждаем вашу идею, привычки и пожелания. Определяем ориентиры по бюджету.' }, { title: 'Продумываем', label: 'Замер', text: 'Изучаем пространство. Вместе выбираем материалы, планировку и каждую деталь.' }, { title: 'Создаём', label: 'Производство', text: 'Изготавливаем мебель по согласованному проекту. Держим вас в курсе процесса.' }, { title: 'Устанавливаем', label: 'Монтаж', text: 'Бережно привозим, собираем и регулируем. Проверяем, чтобы всё работало как надо.' }, { title: 'Остаёмся рядом', label: 'Гарантия', text: 'Не прощаемся после установки. Условия гарантии фиксируем в договоре.' }].map((item, index) => <div className="step" key={item.label} data-reveal style={delay((index % 5) * 90)}><div className="step-top"><span>0{index + 1}</span><small>{item.label}</small></div><h3>{item.title}</h3><p>{item.text}</p></div>)}</div></div></section>
       <section className="faq-section container" data-reveal><div><div className="eyebrow">Чтобы стало чуть понятнее</div><h2 data-reveal>До первого<br />разговора.</h2></div><div className="faq-list">{[{ q: 'Сколько стоит кухня на заказ?', a: 'Стоимость зависит от размеров, материалов фасадов, столешницы и фурнитуры. Начнём с вашей задачи и комфортного бюджета — после замера и выбора комплектации подготовим индивидуальный расчёт.' }, { q: 'Можно прийти со своим дизайн-проектом?', a: 'Конечно. Можно прислать готовый проект, план квартиры или просто фотографии, которые вам нравятся. Обсудим, как воплотить идею и сделать мебель удобной именно для вас.' }, { q: 'Какие сроки изготовления?', a: 'Срок зависит от объёма проекта и доступности материалов. Точную дату согласуем до начала работ и зафиксируем в договоре. Если у вас есть важная дата, расскажите о ней при первом разговоре.' }, { q: 'Работаете только в Хабаровске?', a: 'Основное направление — Хабаровск и пригород. Если ваш объект находится дальше, напишите о нём: возможность замера, доставки и монтажа обсудим индивидуально.' }].map(item => <details key={item.q}><summary>{item.q}<Icon name="plus" size={20} /></summary><p>{item.a}</p></details>)}</div></section>
