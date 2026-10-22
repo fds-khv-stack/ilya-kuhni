@@ -3,9 +3,12 @@ import type { CSSProperties, FormEvent, MouseEvent as ReactMouseEvent, PointerEv
 import { sections } from './data/gallery';
 import type { GallerySection } from './data/gallery';
 
-const HERO_MS = 4000;
 const TILE_MS = 2000;
-const HERO_IMAGES = ['/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg', '/images/hero-4.jpg', '/images/hero-5.jpg', '/images/hero-6.jpg', '/images/hero-7.jpg', '/images/hero-8.jpg', '/images/hero-9.jpg'];
+// Первый экран — безшовный видео-цикл: два ролика сведены в один (диссольв + петля).
+const HERO_VIDEO = '/media/hero-loop.mp4';
+const HERO_VIDEO_M = '/media/hero-loop-m.mp4';
+const HERO_POSTER = '/media/hero-loop-poster.jpg';
+const HERO_POSTER_M = '/media/hero-loop-poster-s.jpg';
 const delay = (ms: number): CSSProperties => ({ ['--d' as string]: `${ms}ms` });
 // WebP-версии генерирует scripts/make_webp.py: <имя>.webp (полный) и <имя>-sm.webp (700 px для плиток).
 // На GitHub Pages сайт живёт в подпапке (/ilya-kuhni/), поэтому все пути идут через BASE_URL.
@@ -249,7 +252,7 @@ export default function App() {
   }, []);
   const [scrolled, setScrolled] = useState(false);
   const [intro, setIntro] = useState(true);
-  const [heroSlide, setHeroSlide] = useState(0);
+  const [heroClip] = useState(() => { const small = typeof window !== 'undefined' && window.matchMedia('(max-width: 700px)').matches; return { src: asset(small ? HERO_VIDEO_M : HERO_VIDEO), poster: asset(small ? HERO_POSTER_M : HERO_POSTER) }; });
   const [gallery, setGallery] = useState<GallerySection | null>(null);
   const [contact, setContact] = useState(false);
   const [channel, setChannel] = useState('Telegram');
@@ -257,13 +260,19 @@ export default function App() {
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState(false);
   const [privacy, setPrivacy] = useState(false);
+  // Видео на первом экране: играем, если система не просит меньше движения
   useEffect(() => {
-    const preload = () => HERO_IMAGES.slice(1).forEach(src => { const img = new Image(); img.src = asset(src.replace(/\.jpe?g$/i, '.webp')); });
-    if (document.readyState === 'complete') preload();
-    else window.addEventListener('load', preload, { once: true });
-    return () => window.removeEventListener('load', preload);
+    const video = document.querySelector<HTMLVideoElement>('.hero-video');
+    if (!video) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const apply = () => {
+      if (reduced.matches) { video.pause(); }
+      else { const played = video.play(); if (played) played.catch(() => {}); }
+    };
+    apply();
+    reduced.addEventListener('change', apply);
+    return () => reduced.removeEventListener('change', apply);
   }, []);
-  useEffect(() => { const t = window.setTimeout(() => setHeroSlide(s => (s + 1) % HERO_IMAGES.length), HERO_MS); return () => window.clearTimeout(t); }, [heroSlide]);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
@@ -320,7 +329,7 @@ ${description || 'Детали хотел(а) бы обсудить лично.'
     <main>
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy"><div className="location"><span className="status-dot" />Частная мастерская · Хабаровск</div><h1 id="hero-title"><span className="line"><span>Авторские кухни</span></span><span className="line"><span>и мебель на заказ</span></span><span className="line"><span className="accent">в Хабаровске</span></span></h1><p className="hero-subtitle">От идеи до установки.<br />Лично от мастера.</p><button className="button button-primary" onClick={scrollToContact}>Обсудить проект<Icon name="diagonal" size={19} /></button><p className="hero-note">Начнём с разговора, а не с договора.</p><div className="hero-bottom"><span className="mini-mark"><Icon name="hand" size={24} /></span><p>Не конвейер. Не типовые решения.<br /><strong>Мебель с вашим характером.</strong></p></div></div>
-        <div className="hero-media">{HERO_IMAGES.map((src, i) => <div key={src} className={`hero-slide ${i === heroSlide ? 'is-on' : ''}`} aria-hidden={i !== heroSlide}><Pic src={src} alt={`Мебель на заказ в Хабаровске — работа мастерской, вид ${i + 1}`} light={false} loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} /></div>)}<div className="image-top-note"><span />Продумано до последней детали</div><div className="hero-progress"><i key={heroSlide} /></div><button className="image-pagination" onClick={() => setHeroSlide(s => (s + 1) % HERO_IMAGES.length)} aria-label={`Следующий интерьер. Сейчас ${heroSlide + 1} из ${HERO_IMAGES.length}`}><b>0{heroSlide + 1}</b><span />0{HERO_IMAGES.length}</button></div>
+        <div className="hero-media"><video className="hero-video" src={heroClip.src} poster={heroClip.poster} autoPlay muted loop playsInline preload="metadata" aria-label="Мебель собирается сама: детали одна за другой встают на место" /><div className="image-top-note"><span />Собирается деталь за деталью</div></div>
         
       </section>
       <section className={megaOn ? 'mega-block is-on' : 'mega-block'} aria-label="О мастерской"><div className="container"><h2 className="mega"><span className="line"><span>Мебель</span></span><span className="line"><span className="fill">с характером</span></span><span className="line"><span className="outline">один мастер</span></span></h2><div className="mega-meta"><span><b>Илья кухни</b> · частная мастерская</span><span>Хабаровск и пригороды</span><span>от эскиза до установки</span></div></div></section>
