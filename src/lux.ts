@@ -22,38 +22,6 @@ function initIntro() {
   else window.addEventListener('load', hide, { once: true });
 }
 
-/* ---------- кастомный курсор: точка + кольцо, кольцо растёт на кликабельном ---------- */
-function initCursor() {
-  if (!fine || reduce) return;
-  const dot = document.createElement('div');
-  const ring = document.createElement('div');
-  dot.className = 'lux-dot';
-  ring.className = 'lux-ring';
-  document.body.append(dot, ring);
-  document.body.classList.add('lux-cursor');
-
-  let x = window.innerWidth / 2, y = window.innerHeight / 2;
-  let rx = x, ry = y;
-
-  const onMove = (e: PointerEvent) => {
-    x = e.clientX;
-    y = e.clientY;
-    dot.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
-    const el = (e.target as HTMLElement | null)?.closest('a, button, .cat-card, .gallery-grid img, input, textarea, summary');
-    ring.classList.toggle('is-active', !!el);
-  };
-  const loop = () => {
-    rx += (x - rx) * 0.18;
-    ry += (y - ry) * 0.18;
-    ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
-    requestAnimationFrame(loop);
-  };
-  window.addEventListener('pointermove', onMove, { passive: true });
-  document.addEventListener('pointerleave', () => { dot.style.opacity = '0'; ring.style.opacity = '0'; });
-  document.addEventListener('pointerenter', () => { dot.style.opacity = '1'; ring.style.opacity = '1'; });
-  requestAnimationFrame(loop);
-}
-
 /* ---------- магнитные кнопки: притягиваются к курсору на несколько пикселей ---------- */
 function initMagnetic() {
   if (!fine || reduce) return;
@@ -148,7 +116,6 @@ function initCounters() {
 
 export function initLux() {
   initIntro();
-  initCursor();
   initMagnetic();
   initParallax();
   initStagger();

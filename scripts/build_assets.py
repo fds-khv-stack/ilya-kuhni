@@ -18,7 +18,9 @@ SECTIONS = [
 ]
 HERO = ["Modern Dark Wood Kitchen Ideas for a Luxurious Home.jpg",
         "Без названия.jpg",
-        "Без названия (1).jpg"]
+        "Без названия (3).jpg",
+        "Без названия (1).jpg",
+        "a clock made out of books on the wall next to a couch and coffee table.jpg"]
 MAX = 1400
 COVER_W = 900
 

@@ -92,7 +92,6 @@ footer{background:var(--lux-1)}
 .hero-media:after{background:linear-gradient(transparent,rgba(6,6,8,.86))}
 .hero-progress{background:rgba(255,255,255,.16)}
 .hero-progress i{background:linear-gradient(90deg,var(--gold),var(--gold-soft))}
-.spotlight{background:radial-gradient(520px circle at var(--mx,55%) var(--my,40%),var(--gold-glow),transparent 64%)}
 .hero-bottom{border-top:1px solid var(--gold-line);color:var(--gold-soft)}
 
 /* ---------- бегущая лента ---------- */
@@ -172,18 +171,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 
 @keyframes lux-line{from{transform:scaleX(.2);opacity:.2}to{transform:scaleX(1);opacity:1}}
 .intro small{color:var(--gold-soft);letter-spacing:.4em}
 
-/* ---------- курсор (только точные указатели) ---------- */
-@media (pointer:fine) and (prefers-reduced-motion:no-preference){
-  .lux-dot,.lux-ring{position:fixed;top:0;left:0;z-index:320;pointer-events:none;border-radius:50%;
-    transform:translate3d(-50%,-50%,0);will-change:transform}
-  .lux-dot{width:6px;height:6px;background:var(--gold)}
-  .lux-ring{width:34px;height:34px;border:1px solid rgba(212,175,55,.55);
-    transition:width .28s var(--ease),height .28s var(--ease),border-color .28s var(--ease),opacity .28s}
-  .lux-ring.is-active{width:56px;height:56px;border-color:var(--gold)}
-  body.lux-cursor{cursor:none}
-  body.lux-cursor a,body.lux-cursor button{cursor:none}
-}
-
 /* ---------- липкие секции с parallax-фоном ---------- */
 .parallax-media{will-change:transform}
 
@@ -196,7 +183,5 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 
 .stagger.is-in>*:nth-child(5){transition-delay:.32s}
 
 @media(prefers-reduced-motion:reduce){
-  .lux-dot,.lux-ring{display:none}
-  body.lux-cursor{cursor:auto}
   .stagger>*{opacity:1;transform:none}
 }

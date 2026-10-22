@@ -5,7 +5,7 @@ import type { GallerySection } from './data/gallery';
 
 const HERO_MS = 4000;
 const TILE_MS = 2000;
-const HERO_IMAGES = ['/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg'];
+const HERO_IMAGES = ['/images/hero-1.jpg', '/images/hero-2.jpg', '/images/hero-3.jpg', '/images/hero-4.jpg', '/images/hero-5.jpg'];
 const delay = (ms: number): CSSProperties => ({ ['--d' as string]: `${ms}ms` });
 // WebP-версии генерирует scripts/make_webp.py: <имя>.webp (полный) и <имя>-sm.webp (700 px для плиток).
 // На GitHub Pages сайт живёт в подпапке (/ilya-kuhni/), поэтому все пути идут через BASE_URL.
@@ -41,7 +41,7 @@ const channels: { name: string; icon: IconName; subtitle: string; href?: string 
   { name: 'Telegram', icon: 'telegram', subtitle: 'Написать в Telegram', href: 'https://t.me/Dmitrii_khv27' },
   { name: 'WhatsApp', icon: 'whatsapp', subtitle: 'Обсудить детали', href: 'https://wa.me/79144009922' },
   { name: 'Max', icon: 'max', subtitle: 'Начать разговор' },
-  { name: 'Позвонить', icon: 'phone', subtitle: '+7 914 400-99-22', href: 'tel:+79144009922' },
+  { name: 'Позвонить', icon: 'phone', subtitle: '+7 914 771-91-48', href: 'tel:+79147719148' },
 ];
 const services = [
   { title: 'Кухни', value: 'Кухня', image: '/gallery/kuhni/p2.jpg', description: 'Место, где начинается ваш день. Продуманное до мелочей.' },
@@ -91,7 +91,7 @@ function CatCard({ section, delayMs, onOpen }: { section: GallerySection; delayM
   };
   const reset = () => { stop(); setBuf({ active: 0, idx: [0, n > 1 ? 1 : 0] }); };
   useEffect(() => stop, []);
-  const style: CSSProperties = { ...delay(delayMs), transition: 'opacity .9s var(--ease),transform .6s var(--ease),filter .9s var(--ease),box-shadow .6s var(--ease)', transitionDelay: 'var(--d,0ms)' };
+  const style: CSSProperties = { ...delay(delayMs), ...(section.focus ? { ['--focus' as string]: section.focus } : {}), transition: 'opacity .9s var(--ease),transform .6s var(--ease),filter .9s var(--ease),box-shadow .6s var(--ease)', transitionDelay: 'var(--d,0ms)' };
   return <button type="button" className="cat-card" data-reveal style={style} onMouseEnter={start} onMouseLeave={reset} onFocus={start} onBlur={reset} onClick={onOpen} aria-label={`${section.title} — ${section.count} фото, открыть каталог`}>
     <Pic className={buf.active === 0 ? 'is-on' : ''} src={photos[buf.idx[0]]} alt={`${section.title} — фото ${buf.idx[0] + 1}`} />
     {n > 1 && <Pic className={buf.active === 1 ? 'is-on' : ''} src={photos[buf.idx[1]]} alt={`${section.title} — фото ${buf.idx[1] + 1}`} />}
@@ -145,6 +145,12 @@ export default function App() {
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState(false);
   const [privacy, setPrivacy] = useState(false);
+  useEffect(() => {
+    const preload = () => HERO_IMAGES.slice(1).forEach(src => { const img = new Image(); img.src = asset(src.replace(/\.jpe?g$/i, '.webp')); });
+    if (document.readyState === 'complete') preload();
+    else window.addEventListener('load', preload, { once: true });
+    return () => window.removeEventListener('load', preload);
+  }, []);
   useEffect(() => { const t = window.setTimeout(() => setHeroSlide(s => (s + 1) % HERO_IMAGES.length), HERO_MS); return () => window.clearTimeout(t); }, [heroSlide]);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -185,23 +191,18 @@ export default function App() {
     setMessage(`Здравствуйте, Илья! Меня зовут ${data.get('name')}.\nХочу обсудить проект: ${data.get('service')}.\n${data.get('description') || 'Детали хотел(а) бы обсудить лично.'}\nУдобный способ связи: ${channel}.\nМой контакт: ${data.get('connection')}.`);
   };
   const download = () => { const url = URL.createObjectURL(new Blob([message], { type: 'text/plain;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'Мой проект — Илья кухни.txt'; a.click(); URL.revokeObjectURL(url); };
-  const onHeroMove = (event: ReactMouseEvent<HTMLElement>) => {
-    const el = event.currentTarget, r = el.getBoundingClientRect();
-    el.style.setProperty('--mx', `${((event.clientX - r.left) / r.width) * 100}%`);
-    el.style.setProperty('--my', `${((event.clientY - r.top) / r.height) * 100}%`);
-  };
   return <>
     <header className={`header ${scrolled ? 'is-scrolled' : ''}`} id="home"><div className="header-inner"><Brand /><nav className="desktop-nav" aria-label="Основная навигация"><a href="#portfolio">Наши работы</a><a href="#master">О мастере</a><a href="#services">Что создаём</a><a href="#process">Как работаем</a></nav><button className="header-cta" onClick={scrollToContact}>Обсудить проект <Icon name="diagonal" size={17} /></button><button className="mobile-menu-button icon-button" onClick={() => setMenu(!menu)} aria-label={menu ? 'Закрыть меню' : 'Открыть меню'} aria-expanded={menu}><Icon name={menu ? 'close' : 'menu'} /></button></div>{menu && <nav className="mobile-nav" aria-label="Мобильная навигация">{[['#portfolio', 'Наши работы'], ['#master', 'О мастере'], ['#services', 'Что создаём'], ['#process', 'Как работаем'], ['#contact', 'Контакты']].map(([href, text]) => <a key={href} href={href} onClick={() => setMenu(false)}>{text}<Icon name="diagonal" size={18} /></a>)}</nav>}</header>
     <main>
-      <section className="hero" aria-labelledby="hero-title" onMouseMove={onHeroMove}>
+      <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy"><div className="location"><span className="status-dot" />Частная мастерская · Хабаровск</div><h1 id="hero-title">Авторские кухни<br className="desktop-break" /> и мебель на заказ<br className="desktop-break" /> <span>в Хабаровске</span></h1><p className="hero-subtitle">От идеи до установки.<br />Лично от мастера.</p><button className="button button-primary" onClick={scrollToContact}>Обсудить проект<Icon name="diagonal" size={19} /></button><p className="hero-note">Начнём с разговора, а не с договора.</p><div className="hero-bottom"><span className="mini-mark"><Icon name="hand" size={24} /></span><p>Не конвейер. Не типовые решения.<br /><strong>Мебель с вашим характером.</strong></p></div></div>
         <div className="hero-media">{HERO_IMAGES.map((src, i) => <div key={src} className={`hero-slide ${i === heroSlide ? 'is-on' : ''}`} aria-hidden={i !== heroSlide}><Pic src={src} alt={`Мебель на заказ в Хабаровске — работа мастерской, вид ${i + 1}`} light={false} loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} /></div>)}<div className="image-top-note"><span />Продумано до последней детали</div><div className="hero-progress"><i key={heroSlide} /></div><button className="image-pagination" onClick={() => setHeroSlide(s => (s + 1) % HERO_IMAGES.length)} aria-label={`Следующий интерьер. Сейчас ${heroSlide + 1} из ${HERO_IMAGES.length}`}><b>0{heroSlide + 1}</b><span />0{HERO_IMAGES.length}</button></div>
-        <div className="spotlight" />
+        
       </section>
       <div className="principles container"><div data-reveal style={delay(0)}><Icon name="ruler" size={26} /><span>По вашим размерам.<br /><strong>Под ваш образ жизни.</strong></span></div><div data-reveal style={delay(90)}><Icon name="leaf" size={26} /><span>Материалы, к которым<br /><strong>приятно прикоснуться.</strong></span></div><div data-reveal style={delay(180)}><Icon name="hand" size={26} /><span>Один мастер.<br /><strong>Личная ответственность.</strong></span></div></div>
       <div className="marquee"><div className="marquee-track">{marqueeItems.map(item => <span key={`${item.dup}-${item.slug}`} aria-hidden={item.dup === 1 || undefined}>{item.title}<b> ·</b></span>)}<span aria-hidden="true" /></div></div>
       <section id="portfolio" className="portfolio section container" data-reveal>
-        <div className="section-heading"><div><div className="eyebrow">Каждая деталь имеет значение</div><h2 data-reveal>НЕ просто мебель,<br />а часть <span className="mark">ВАШЕЙ</span> жизни</h2></div><p data-reveal>Восемь направлений и настоящие работы мастерской.<br className="desktop-break" /> Один подход — создавать как для себя.</p></div>
+        <div className="section-heading"><div><div className="eyebrow">Каждая деталь имеет значение</div><h2 data-reveal>НЕ просто мебель,<br />а часть <span className="mark">ВАШЕЙ</span> жизни</h2></div><p data-reveal>Семь направлений и настоящие работы мастерской.<br className="desktop-break" /> Один подход — создавать как для себя.</p></div>
         <div className="cat-grid">{sections.map((section, i) => <CatCard key={section.slug} section={section} delayMs={(i % 4) * 90} onOpen={() => setGallery(section)} />)}</div>
       </section>
       <section id="master" className="master-section" data-reveal><div className="container master-grid"><div className="master-photo"><Pic className="img-reveal" src="/gallery/kuhni/p5.jpg" alt="Мебель на заказ в Хабаровске — работа мастерской «Илья кухни»" /><span className="photo-label">За каждой деталью — человек</span></div><div className="master-copy"><div className="eyebrow">Давайте познакомимся</div><h2 data-reveal>Меня зовут Илья.<br />И я отвечаю<br />за свою работу.</h2><p className="master-intro">«Хорошая мебель не просит внимания.<br />Она просто делает вашу жизнь удобнее».</p><p>Я создаю кухни и мебель под конкретного человека. Сначала слушаю: как вы готовите, что любите, где храните любимые чашки. И только потом предлагаю решения.</p><p>Для меня важны не только фасады на фотографии, но и то, как открывается каждый ящик. Поэтому я лично веду проект — от первого разговора до последней регулировки.</p><div className="master-signoff"><span className="signature">Илья</span><span>Ваш мастер.<br />На каждом этапе.</span></div><a className="text-link" href="#process">Как будет устроена наша работа<Icon name="arrow" size={18} /></a></div></div></section>
@@ -214,7 +215,7 @@ export default function App() {
         return item.href
           ? <a key={key} className="channel-card" data-reveal style={style} href={item.href} target={item.href.startsWith('http') ? '_blank' : undefined} rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}>{inner}</a>
           : <button key={key} className="channel-card" data-reveal style={style} onClick={() => openContact(item.name)}>{inner}</button>;
-      })}</div><div className="contact-bottom"><span><Icon name="pin" size={15} />Хабаровск и пригород</span><a href="tel:+79144009922" style={{ color: 'var(--brass-soft)', letterSpacing: '.04em' }}>+7 914 400-99-22</a><span>Общение напрямую с мастером. Без менеджеров.</span></div></div></section>
+      })}</div><div className="contact-bottom"><span><Icon name="pin" size={15} />Хабаровск и пригород</span><a href="tel:+79147719148" style={{ color: 'var(--brass-soft)', letterSpacing: '.04em' }}>+7 914 771-91-48</a><span>Общение напрямую с мастером. Без менеджеров.</span></div></div></section>
     </main>
     <footer className="footer container"><div className="footer-top"><Brand /><div className="footer-links"><a href="#portfolio">Наши работы</a><a href="#master">О мастере</a><a href="#contact">Контакты</a></div><a href="#home" className="back-top">Наверх <Icon name="arrow" size={17} /></a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Илья кухни. Сделано с вниманием.</span><button onClick={() => setPrivacy(true)}>Конфиденциальность</button><span>Авторская мебель. Личный подход.</span></div><p style={{ marginTop: '14px', fontSize: '10px', color: '#969a8f' }}>Сайт разработан <a href="https://t.me/Dmitrii_khv27" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>Дмитрием — сайты и ИИ-системы · @Dmitrii_khv27</a></p></footer>
     {gallery && <SectionModal section={gallery} onClose={() => setGallery(null)} />}

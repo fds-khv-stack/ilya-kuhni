@@ -1,5 +1,5 @@
 // Сгенерировано scripts/build_assets.py — не править руками.
-export type GallerySection = { slug: string; title: string; count: number; cover: string; photos: string[] };
+export type GallerySection = { slug: string; title: string; count: number; cover: string; focus?: string; photos: string[] };
 export const sections: GallerySection[] = [
   {
     "slug": "kuhni",
@@ -7,6 +7,7 @@ export const sections: GallerySection[] = [
     "count": 50,
     "cover": "/gallery/kuhni/cover.jpg",
     "photos": [
+      "/gallery/kuhni/p24.jpg",
       "/gallery/kuhni/p36.jpg",
       "/gallery/kuhni/p3.jpg",
       "/gallery/kuhni/p1.jpg",
@@ -31,7 +32,6 @@ export const sections: GallerySection[] = [
       "/gallery/kuhni/p21.jpg",
       "/gallery/kuhni/p22.jpg",
       "/gallery/kuhni/p23.jpg",
-      "/gallery/kuhni/p24.jpg",
       "/gallery/kuhni/p25.jpg",
       "/gallery/kuhni/p26.jpg",
       "/gallery/kuhni/p27.jpg",
@@ -127,6 +127,7 @@ export const sections: GallerySection[] = [
     "count": 20,
     "cover": "/gallery/tumby/cover.jpg",
     "photos": [
+      "/gallery/tumby/p8.jpg",
       "/gallery/tumby/p2.jpg",
       "/gallery/tumby/p1.jpg",
       "/gallery/tumby/p3.jpg",
@@ -134,7 +135,6 @@ export const sections: GallerySection[] = [
       "/gallery/tumby/p5.jpg",
       "/gallery/tumby/p6.jpg",
       "/gallery/tumby/p7.jpg",
-      "/gallery/tumby/p8.jpg",
       "/gallery/tumby/p9.jpg",
       "/gallery/tumby/p10.jpg",
       "/gallery/tumby/p11.jpg",
@@ -155,10 +155,10 @@ export const sections: GallerySection[] = [
     "count": 19,
     "cover": "/gallery/vannaya/cover.jpg",
     "photos": [
+      "/gallery/vannaya/p3.jpg",
       "/gallery/vannaya/p18.jpg",
       "/gallery/vannaya/p1.jpg",
       "/gallery/vannaya/p2.jpg",
-      "/gallery/vannaya/p3.jpg",
       "/gallery/vannaya/p4.jpg",
       "/gallery/vannaya/p5.jpg",
       "/gallery/vannaya/p6.jpg",
@@ -209,21 +209,13 @@ export const sections: GallerySection[] = [
   },
   {
     "slug": "stoly",
-    "title": "Столы",
-    "count": 3,
+    "title": "Столы и кабинет",
+    "count": 7,
     "cover": "/gallery/stoly/cover.jpg",
     "photos": [
       "/gallery/stoly/p1.jpg",
       "/gallery/stoly/p2.jpg",
-      "/gallery/stoly/p3.jpg"
-    ]
-  },
-  {
-    "slug": "ofis",
-    "title": "Офисная мебель",
-    "count": 4,
-    "cover": "/gallery/ofis/cover.jpg",
-    "photos": [
+      "/gallery/stoly/p3.jpg",
       "/gallery/ofis/p4.jpg",
       "/gallery/ofis/p1.jpg",
       "/gallery/ofis/p2.jpg",
