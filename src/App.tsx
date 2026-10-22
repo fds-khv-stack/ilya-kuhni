@@ -94,7 +94,7 @@ function CatCard({ section, delayMs, onOpen }: { section: GallerySection; delayM
   const style: CSSProperties = { ...delay(delayMs), transition: 'opacity .9s var(--ease),transform .6s var(--ease),filter .9s var(--ease),box-shadow .6s var(--ease)', transitionDelay: 'var(--d,0ms)' };
   return <button type="button" className="cat-card" data-reveal style={style} onMouseEnter={start} onMouseLeave={reset} onFocus={start} onBlur={reset} onClick={onOpen} aria-label={`${section.title} — ${section.count} фото, открыть каталог`}>
     <Pic className={buf.active === 0 ? 'is-on' : ''} src={photos[buf.idx[0]]} alt={`${section.title} — фото ${buf.idx[0] + 1}`} />
-    {n > 1 && <Pic className={buf.active === 1 ? 'is-on' : ''} src={photos[buf.idx[1]]} alt="" />}
+    {n > 1 && <Pic className={buf.active === 1 ? 'is-on' : ''} src={photos[buf.idx[1]]} alt={`${section.title} — фото ${buf.idx[1] + 1}`} />}
     <span className="cat-shade" />
     <div className="cat-copy"><div><span className="cat-name">{section.title}</span><span className="cat-count">{section.count} фото</span></div><span className="circle-arrow"><Icon name="diagonal" size={18} /></span></div>
   </button>;
