@@ -338,3 +338,7 @@ body.is-ready .hero h1 .line:nth-child(3)>span{animation-delay:.18s}
   .mega .line>span{clip-path:none;transform:none;transition:none}
   .master-photo .spot-dim{display:none}
 }
+/* Три обещания: убираем «кнопочные» рамки и тёмно-оливковый текст из старой светлой темы */
+.principles span{background:none;border:0;box-shadow:none;color:#b9b09f}
+.principles strong{color:#f4efe6;font-weight:500}
+.principles svg{color:var(--brass-soft)}

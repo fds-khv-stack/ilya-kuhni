@@ -188,6 +188,7 @@ function SectionModal({ section, onClose }: { section: GallerySection; onClose: 
 }
 export default function App() {
   const [menu, setMenu] = useState(false);
+  const [megaOn, setMegaOn] = useState(false);
 
   // Переходы по якорям делаем сами: нативный прыжок по #hash на мобильных терялся
   // (меню закрывалось, страница оставалась на месте), плюс нужен отступ под липкую шапку.
@@ -208,41 +209,43 @@ export default function App() {
     return () => document.removeEventListener('click', onClick);
   }, []);
 
-  // Мега-типографика раскрывается при появлении; фото мастера «выходит из темноты» под курсором
+  // Мега-типографика раскрывается при появлении. Класс держим в состоянии:
+  // прямой classList React снимает при следующей перерисовке (после заставки)
   useEffect(() => {
     const mega = document.querySelector('.mega-block');
-    let io: IntersectionObserver | undefined;
-    if (mega) {
-      io = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) { mega.classList.add('is-on'); io?.unobserve(mega); }
-        });
-      }, { threshold: 0.3 });
-      io.observe(mega);
-    }
+    if (!mega) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { setMegaOn(true); io.unobserve(mega); }
+      });
+    }, { threshold: 0.3 });
+    io.observe(mega);
+    return () => io.disconnect();
+  }, []);
+
+  // Фото мастера «выходит из темноты»: свет идёт за курсором, на телефоне — по прокрутке
+  useEffect(() => {
     const photo = document.querySelector<HTMLElement>('.master-photo');
     const dim = photo?.querySelector<HTMLElement>('.spot-dim');
+    if (!photo || !dim) return;
     const onMove = (event: PointerEvent) => {
-      if (!photo || !dim) return;
       const r = photo.getBoundingClientRect();
       dim.style.setProperty('--x', `${event.clientX - r.left}px`);
       dim.style.setProperty('--y', `${event.clientY - r.top}px`);
     };
     const onScroll = () => {
-      if (!photo || !dim) return;
       const r = photo.getBoundingClientRect();
       const p = 1 - Math.min(1, Math.max(0, r.top / window.innerHeight));
       dim.style.setProperty('--x', '50%');
       dim.style.setProperty('--y', `${22 + p * 52}%`);
     };
-    const touch = window.matchMedia('(hover: none)').matches;
-    if (photo && dim && touch) { onScroll(); window.addEventListener('scroll', onScroll, { passive: true }); }
-    else if (photo) photo.addEventListener('pointermove', onMove);
-    return () => {
-      io?.disconnect();
-      photo?.removeEventListener('pointermove', onMove);
-      window.removeEventListener('scroll', onScroll);
-    };
+    if (window.matchMedia('(hover: none)').matches) {
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      return () => window.removeEventListener('scroll', onScroll);
+    }
+    photo.addEventListener('pointermove', onMove);
+    return () => photo.removeEventListener('pointermove', onMove);
   }, []);
   const [scrolled, setScrolled] = useState(false);
   const [intro, setIntro] = useState(true);
@@ -320,7 +323,7 @@ ${description || 'Детали хотел(а) бы обсудить лично.'
         <div className="hero-media">{HERO_IMAGES.map((src, i) => <div key={src} className={`hero-slide ${i === heroSlide ? 'is-on' : ''}`} aria-hidden={i !== heroSlide}><Pic src={src} alt={`Мебель на заказ в Хабаровске — работа мастерской, вид ${i + 1}`} light={false} loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} /></div>)}<div className="image-top-note"><span />Продумано до последней детали</div><div className="hero-progress"><i key={heroSlide} /></div><button className="image-pagination" onClick={() => setHeroSlide(s => (s + 1) % HERO_IMAGES.length)} aria-label={`Следующий интерьер. Сейчас ${heroSlide + 1} из ${HERO_IMAGES.length}`}><b>0{heroSlide + 1}</b><span />0{HERO_IMAGES.length}</button></div>
         
       </section>
-      <section className="mega-block" aria-label="О мастерской"><div className="container"><h2 className="mega"><span className="line"><span>Мебель</span></span><span className="line"><span className="fill">с характером</span></span><span className="line"><span className="outline">один мастер</span></span></h2><div className="mega-meta"><span><b>Илья кухни</b> · частная мастерская</span><span>Хабаровск и пригороды</span><span>от эскиза до установки</span></div></div></section>
+      <section className={megaOn ? 'mega-block is-on' : 'mega-block'} aria-label="О мастерской"><div className="container"><h2 className="mega"><span className="line"><span>Мебель</span></span><span className="line"><span className="fill">с характером</span></span><span className="line"><span className="outline">один мастер</span></span></h2><div className="mega-meta"><span><b>Илья кухни</b> · частная мастерская</span><span>Хабаровск и пригороды</span><span>от эскиза до установки</span></div></div></section>
       <div className="principles container"><div data-reveal style={delay(0)}><Icon name="ruler" size={26} /><span>По вашим размерам.<br /><strong>Под ваш образ жизни.</strong></span></div><div data-reveal style={delay(90)}><Icon name="leaf" size={26} /><span>Материалы, к которым<br /><strong>приятно прикоснуться.</strong></span></div><div data-reveal style={delay(180)}><Icon name="hand" size={26} /><span>Один мастер.<br /><strong>Личная ответственность.</strong></span></div></div>
       <div className="marquee"><div className="marquee-track">{marqueeItems.map(item => <span key={`${item.dup}-${item.slug}`} aria-hidden={item.dup === 1 || undefined}>{item.title}<b> ·</b></span>)}<span aria-hidden="true" /></div></div>
       <section id="portfolio" className="portfolio section container" data-reveal>
