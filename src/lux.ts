@@ -10,16 +10,12 @@ function initIntro() {
   if (!intro) return;
   const started = performance.now();
   const hide = () => {
-    const wait = Math.max(0, 1800 - (performance.now() - started));
-    window.setTimeout(() => {
-      intro.style.opacity = '0';
-      intro.style.visibility = 'hidden';
-      intro.style.transition = 'opacity .7s cubic-bezier(.22,.61,.36,1)';
-      document.body.classList.add('is-ready');
-    }, wait);
+    const wait = Math.max(0, 3000 - (performance.now() - started));
+    window.setTimeout(() => { document.body.classList.add('is-ready'); }, wait);
   };
-  if (document.readyState === 'complete') hide();
-  else window.addEventListener('load', hide, { once: true });
+  // Считаем паузу от запуска, а не от события load: видео на первом экране
+  // грузится дольше, и заголовок иначе «догонял» уже ушедшую заставку
+  hide();
 }
 
 /* ---------- магнитные кнопки: притягиваются к курсору на несколько пикселей ---------- */

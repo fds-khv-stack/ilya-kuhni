@@ -358,3 +358,16 @@ body.is-ready .hero h1 .line:nth-child(3)>span{animation-delay:.18s}
 @keyframes heroDrift{from{transform:scale(1)}to{transform:scale(1.035)}}
 @media(max-width:700px){.hero-media .hero-video{object-position:center 50%}}
 @media(prefers-reduced-motion:reduce){.hero-media .hero-video{animation:none;transform:none}}
+
+/* Слоган первого экрана: типографика мега-блока (фото-заливка, обводка, плотный интерлиньяж) переехала в h1 */
+.hero h1.hero-mega{font-size:clamp(34px,4vw,58px);line-height:.97;letter-spacing:-.035em;margin:0 0 26px;white-space:normal;font-weight:500;max-width:15ch}
+.hero h1.hero-mega span{color:#f4efe6}
+.hero h1.hero-mega .line{display:block;overflow:hidden;padding-bottom:.06em}
+.hero h1.hero-mega .fill{-webkit-background-clip:text;background-clip:text;color:transparent;
+  background-size:cover;background-position:center 45%;-webkit-text-stroke:.9px rgba(201,161,90,.35)}
+.hero h1.hero-mega .outline{color:transparent;-webkit-text-stroke:1.1px rgba(244,239,230,.5)}
+@media(max-width:1180px){.hero h1.hero-mega{font-size:clamp(32px,4.4vw,46px);max-width:none}}
+@media(max-width:700px){.hero h1.hero-mega{font-size:clamp(27px,7.5vw,38px);line-height:1;letter-spacing:-.03em;margin-bottom:18px;max-width:none}
+  /* на мелком кегле фото-заливка читается грязно — заменяем латунным градиентом */
+  .hero h1.hero-mega .fill{background-image:linear-gradient(100deg,#d8b16a,#f0dfba 45%,#b98f45)!important}}
+@media(max-width:400px){.hero h1.hero-mega{font-size:clamp(25px,7.8vw,31px)}}

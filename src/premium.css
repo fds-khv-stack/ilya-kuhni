@@ -101,7 +101,7 @@ h2 span.mark{background:linear-gradient(transparent 62%,rgba(201,161,90,.42) 0);
 
 /* ---------- вступление ---------- */
 .intro{position:fixed;inset:0;z-index:200;background:linear-gradient(150deg,#2b1a10,#160c04);color:#f4ead9;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;animation:intro-out .95s var(--ease) 1.05s forwards}
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;animation:intro-out .7s var(--ease) 3s forwards}
 .intro-mark{font-family:var(--display);font-size:36px;letter-spacing:-1.2px}
 .intro-mark span{color:var(--brass)}
 .intro-line{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--brass),transparent)}
