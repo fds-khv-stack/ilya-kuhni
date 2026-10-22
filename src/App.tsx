@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { CSSProperties, FormEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
+import type { CSSProperties, FormEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { sections } from './data/gallery';
 import type { GallerySection } from './data/gallery';
 
@@ -99,20 +99,63 @@ function CatCard({ section, delayMs, onOpen }: { section: GallerySection; delayM
     <div className="cat-copy"><div><span className="cat-name">{section.title}</span><span className="cat-count">{section.count} фото</span></div><span className="circle-arrow"><Icon name="diagonal" size={18} /></span></div>
   </button>;
 }
-// Окно раздела: сетка всех фото + лайтбокс с листанием стрелками и закрытием по Esc.
+// Окно раздела: сетка всех фото + лайтбокс: стрелки на десктопе, свайп на телефоне, Esc для закрытия.
 function SectionModal({ section, onClose }: { section: GallerySection; onClose: () => void }) {
   const n = section.photos.length;
   const [photo, setPhoto] = useState<number | null>(null);
+  const stage = useRef<HTMLDivElement | null>(null);
+  const drag = useRef({ x: 0, y: 0, active: false, moved: false, dx: 0 });
+  const swiped = useRef(false);
+
+  const step = (dir: number) => setPhoto(v => (v === null ? v : (v + dir + n) % n));
+
   useEffect(() => {
     if (photo === null) return;
     const key = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); setPhoto(null); }
-      else if (e.key === 'ArrowRight') setPhoto(v => v === null ? v : (v + 1) % n);
-      else if (e.key === 'ArrowLeft') setPhoto(v => v === null ? v : (v - 1 + n) % n);
+      else if (e.key === 'ArrowRight') { e.preventDefault(); setPhoto(v => (v === null ? v : (v + 1) % n)); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); setPhoto(v => (v === null ? v : (v - 1 + n) % n)); }
     };
     document.addEventListener('keydown', key, true);
     return () => document.removeEventListener('keydown', key, true);
   }, [photo, n]);
+
+  /* Свайп: кадр идёт за пальцем, на отпускании — листание или мягкий возврат */
+  const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    drag.current = { x: e.clientX, y: e.clientY, active: true, moved: false, dx: 0 };
+    swiped.current = false;
+    try { e.currentTarget.setPointerCapture?.(e.pointerId); } catch { /* синтетические события без активного указателя */ }
+    if (stage.current) stage.current.style.transition = 'none';
+  };
+  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d.active) return;
+    const dx = e.clientX - d.x;
+    const dy = e.clientY - d.y;
+    if (!d.moved) {
+      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)) return;
+      d.moved = true;
+    }
+    d.dx = dx;
+    if (stage.current) stage.current.style.transform = `translateX(${dx}px)`;
+  };
+  const onUp = () => {
+    const d = drag.current;
+    d.active = false;
+    if (stage.current) {
+      stage.current.style.transition = '';
+      stage.current.style.transform = '';
+    }
+    if (d.moved && Math.abs(d.dx) > 44) {
+      swiped.current = true;
+      step(d.dx < 0 ? 1 : -1);
+      // снимаем «глушилку» клика по таймауту: иначе первый осознанный тап по фону проглатывался
+      window.setTimeout(() => { swiped.current = false; }, 350);
+    }
+    d.moved = false;
+  };
+
   return <Modal onClose={onClose} title={section.title}>
     <div className="modal-content">
       <div className="gallery-head">
@@ -126,15 +169,44 @@ function SectionModal({ section, onClose }: { section: GallerySection; onClose: 
         {section.photos.map((src, i) => <Pic key={src} src={src} alt={`${section.title} — фото ${i + 1}`} onClick={() => setPhoto(i)} />)}
       </div>
     </div>
-    {photo !== null && <div className="lightbox" onClick={() => setPhoto(null)}>
-      <Pic src={section.photos[photo]} alt={`${section.title} — фото ${photo + 1}`} light={false} loading="eager" onClick={e => e.stopPropagation()} />
+    {photo !== null && <div className="lightbox" onClick={() => { if (swiped.current) { swiped.current = false; return; } setPhoto(null); }}>
+      <div className="lightbox-stage" ref={stage}
+        onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}
+        onClick={e => e.stopPropagation()}>
+        <Pic src={section.photos[photo]} alt={`${section.title} — фото ${photo + 1}`} light={false} loading="eager" />
+      </div>
+      <button className="lightbox-nav-btn prev" onClick={e => { e.stopPropagation(); step(-1); }} aria-label="Предыдущее фото"><Icon name="arrow" size={22} className="flip" /></button>
+      <button className="lightbox-nav-btn next" onClick={e => { e.stopPropagation(); step(1); }} aria-label="Следующее фото"><Icon name="arrow" size={22} /></button>
       <button className="lightbox-close icon-button" onClick={() => setPhoto(null)} aria-label="Закрыть фото"><Icon name="close" /></button>
-      <span className="lightbox-nav">← → / Esc</span>
+      <div className="lightbox-bar">
+        <span className="lightbox-count">{String(photo + 1).padStart(2, '0')} <i /> {String(n).padStart(2, '0')}</span>
+        <span className="lightbox-hint hint-keys">← → · Esc</span>
+        <span className="lightbox-hint hint-swipe">Свайп · тап — закрыть</span>
+      </div>
     </div>}
   </Modal>;
 }
 export default function App() {
   const [menu, setMenu] = useState(false);
+
+  // Переходы по якорям делаем сами: нативный прыжок по #hash на мобильных терялся
+  // (меню закрывалось, страница оставалась на месте), плюс нужен отступ под липкую шапку.
+  useEffect(() => {
+    const onClick = (event: globalThis.MouseEvent) => {
+      const link = (event.target as HTMLElement | null)?.closest?.('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!link) return;
+      const id = link.getAttribute('href');
+      if (!id || id.length < 2) return;
+      const target = document.querySelector(id);
+      if (!target) return;
+      event.preventDefault();
+      setMenu(false);
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', id);
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const [intro, setIntro] = useState(true);
   const [heroSlide, setHeroSlide] = useState(0);
